@@ -1,0 +1,236 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "chris",
+      "email": "chris@warpdrive.io",
+      "displayName": "Chris Thoburn",
+      "bio": "Project Lead for WarpDrive. Senior Staff Engineer @auditboard. Passionate about reactive data systems.",
+      "avatarUrl": "https://i.pravatar.cc/150?img=12",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "username": "krystan",
+      "email": "krystan@warpdrive.io",
+      "displayName": "Krystan HuffMenne",
+      "bio": "Core team member. Staff Software Engineer @auditboard. Building the future of data management.",
+      "avatarUrl": "https://i.pravatar.cc/150?img=45",
+      "createdAt": "2024-01-20T10:00:00Z",
+      "updatedAt": "2024-01-20T10:00:00Z"
+    },
+    {
+      "id": "3",
+      "username": "rich",
+      "email": "rich@warpdrive.io",
+      "displayName": "Rich Glazerman",
+      "bio": "Core team member. Software Engineer @square. TypeScript enthusiast.",
+      "avatarUrl": "https://i.pravatar.cc/150?img=33",
+      "createdAt": "2024-02-01T10:00:00Z",
+      "updatedAt": "2024-02-01T10:00:00Z"
+    },
+    {
+      "id": "4",
+      "username": "kirill",
+      "email": "kirill@warpdrive.io",
+      "displayName": "Kirill Shaplyko",
+      "bio": "Core team member. Lead Developer @galar. Performance optimization expert.",
+      "avatarUrl": "https://i.pravatar.cc/150?img=51",
+      "createdAt": "2024-02-10T10:00:00Z",
+      "updatedAt": "2024-02-10T10:00:00Z"
+    },
+    {
+      "id": "5",
+      "username": "jane",
+      "email": "jane@example.com",
+      "displayName": "Jane Developer",
+      "bio": "Full-stack developer learning WarpDrive. React and Ember enthusiast.",
+      "avatarUrl": "https://i.pravatar.cc/150?img=5",
+      "createdAt": "2024-03-01T10:00:00Z",
+      "updatedAt": "2024-03-01T10:00:00Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "1",
+      "name": "Getting Started",
+      "slug": "getting-started",
+      "description": "Guides for developers new to WarpDrive",
+      "postCount": 0
+    },
+    {
+      "id": "2",
+      "name": "Advanced Topics",
+      "slug": "advanced-topics",
+      "description": "Deep dives into WarpDrive's architecture and capabilities",
+      "postCount": 0
+    },
+    {
+      "id": "3",
+      "name": "Tutorials",
+      "slug": "tutorials",
+      "description": "Step-by-step tutorials and examples",
+      "postCount": 0
+    },
+    {
+      "id": "4",
+      "name": "Case Studies",
+      "slug": "case-studies",
+      "description": "Real-world applications and success stories",
+      "postCount": 0
+    }
+  ],
+  "tags": [
+    {
+      "id": "1",
+      "name": "JavaScript",
+      "slug": "javascript",
+      "postCount": 0
+    },
+    {
+      "id": "2",
+      "name": "TypeScript",
+      "slug": "typescript",
+      "postCount": 0
+    },
+    {
+      "id": "3",
+      "name": "Ember.js",
+      "slug": "emberjs",
+      "postCount": 0
+    },
+    {
+      "id": "4",
+      "name": "React",
+      "slug": "react",
+      "postCount": 0
+    },
+    {
+      "id": "5",
+      "name": "Performance",
+      "slug": "performance",
+      "postCount": 0
+    },
+    {
+      "id": "6",
+      "name": "Caching",
+      "slug": "caching",
+      "postCount": 0
+    },
+    {
+      "id": "7",
+      "name": "Schemas",
+      "slug": "schemas",
+      "postCount": 0
+    }
+  ],
+  "posts": [
+    {
+      "id": "1",
+      "title": "Introduction to WarpDrive",
+      "slug": "introduction-to-warpdrive",
+      "body": "WarpDrive is the next iteration of ember-data, redesigned for modern web development...",
+      "excerpt": "Learn about WarpDrive's core features and how it differs from traditional data libraries.",
+      "status": "published",
+      "publishedAt": "2024-11-01T10:00:00Z",
+      "viewCount": 342,
+      "likeCount": 45,
+      "commentCount": 12,
+      "authorId": "1",
+      "categoryId": "1",
+      "tagIds": ["1", "3"],
+      "createdAt": "2024-10-28T10:00:00Z",
+      "updatedAt": "2024-11-01T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Understanding Fine-Grained Reactivity",
+      "slug": "understanding-fine-grained-reactivity",
+      "body": "Fine-grained reactivity is at the heart of WarpDrive's architecture. In this post, we'll explore...",
+      "excerpt": "Deep dive into how WarpDrive achieves efficient, fine-grained reactive updates.",
+      "status": "published",
+      "publishedAt": "2024-11-15T10:00:00Z",
+      "viewCount": 198,
+      "likeCount": 32,
+      "commentCount": 8,
+      "authorId": "1",
+      "categoryId": "2",
+      "tagIds": ["1", "5"],
+      "createdAt": "2024-11-10T10:00:00Z",
+      "updatedAt": "2024-11-15T10:00:00Z"
+    },
+    {
+      "id": "3",
+      "title": "TypeScript Best Practices with WarpDrive",
+      "slug": "typescript-best-practices",
+      "body": "WarpDrive is TypeScript-first, providing excellent type safety out of the box...",
+      "excerpt": "Learn how to leverage TypeScript for better developer experience with WarpDrive.",
+      "status": "published",
+      "publishedAt": "2024-11-20T10:00:00Z",
+      "viewCount": 256,
+      "likeCount": 38,
+      "commentCount": 15,
+      "authorId": "3",
+      "categoryId": "3",
+      "tagIds": ["2", "1"],
+      "createdAt": "2024-11-18T10:00:00Z",
+      "updatedAt": "2024-11-20T10:00:00Z"
+    },
+    {
+      "id": "4",
+      "title": "Migrating from Redux to WarpDrive",
+      "slug": "migrating-from-redux",
+      "body": "If you're using Redux for data management, WarpDrive offers a more streamlined approach...",
+      "excerpt": "A practical guide for React developers moving from Redux to WarpDrive.",
+      "status": "published",
+      "publishedAt": "2024-11-25T10:00:00Z",
+      "viewCount": 412,
+      "likeCount": 67,
+      "commentCount": 23,
+      "authorId": "5",
+      "categoryId": "3",
+      "tagIds": ["4", "1"],
+      "createdAt": "2024-11-22T10:00:00Z",
+      "updatedAt": "2024-11-25T10:00:00Z"
+    },
+    {
+      "id": "5",
+      "title": "Optimizing Cache Performance",
+      "slug": "optimizing-cache-performance",
+      "body": "WarpDrive's caching system is incredibly powerful. Here's how to make the most of it...",
+      "excerpt": "Performance tips and tricks for WarpDrive's caching layer.",
+      "status": "published",
+      "publishedAt": "2024-12-01T10:00:00Z",
+      "viewCount": 189,
+      "likeCount": 28,
+      "commentCount": 6,
+      "authorId": "4",
+      "categoryId": "2",
+      "tagIds": ["5", "6"],
+      "createdAt": "2024-11-28T10:00:00Z",
+      "updatedAt": "2024-12-01T10:00:00Z"
+    },
+    {
+      "id": "6",
+      "title": "Building a Real-Time Dashboard",
+      "slug": "building-realtime-dashboard",
+      "body": "Learn how to build a real-time dashboard using WarpDrive's reactive primitives...",
+      "excerpt": "Step-by-step tutorial for creating reactive, real-time UIs.",
+      "status": "draft",
+      "publishedAt": null,
+      "viewCount": 0,
+      "likeCount": 0,
+      "commentCount": 0,
+      "authorId": "2",
+      "categoryId": "3",
+      "tagIds": ["1", "4"],
+      "createdAt": "2024-12-03T10:00:00Z",
+      "updatedAt": "2024-12-04T10:00:00Z"
+    }
+  ],
+  "comments": [],
+  "likes": [],
+  "follows": []
+}
+
