@@ -176,5 +176,211 @@ router.delete('/:id', (req, res) => {
   }
 });
 
+/**
+ * GET /api/users/:id/followers
+ * Get users who follow this user
+ */
+router.get('/:id/followers', (req, res) => {
+  try {
+    const user = store.findById('users', req.params.id);
+    
+    if (!user) {
+      return res.status(404).json(
+        serializeError(404, 'Not Found', `User with id '${req.params.id}' not found`)
+      );
+    }
+
+    const { pagination, sort, fields } = parseQueryParams(req.query);
+
+    // Find all follow relationships where this user is being followed
+    const follows = store.findBy('follows', f => f.followingId === req.params.id);
+    
+    // Get the follower users
+    let followers = follows.map(f => store.findById('users', f.followerId)).filter(Boolean);
+
+    // Apply sorting
+    if (sort.length > 0) {
+      followers = store.sort(followers, sort);
+    }
+
+    // Get total count before pagination
+    const totalCount = followers.length;
+
+    // Apply pagination
+    const paginatedResult = store.paginate(followers, pagination);
+    
+    res.json(userSerializer.serializeMany(paginatedResult.data, {
+      sparseFields: fields,
+      meta: {
+        count: paginatedResult.data.length,
+        total: totalCount,
+        page: {
+          number: pagination.page,
+          size: pagination.size,
+          totalPages: paginatedResult.meta.totalPages
+        }
+      }
+    }));
+  } catch (error) {
+    res.status(500).json(serializeError(500, 'Internal Server Error', error.message));
+  }
+});
+
+/**
+ * GET /api/users/:id/following
+ * Get users that this user follows
+ */
+router.get('/:id/following', (req, res) => {
+  try {
+    const user = store.findById('users', req.params.id);
+    
+    if (!user) {
+      return res.status(404).json(
+        serializeError(404, 'Not Found', `User with id '${req.params.id}' not found`)
+      );
+    }
+
+    const { pagination, sort, fields } = parseQueryParams(req.query);
+
+    // Find all follow relationships where this user is the follower
+    const follows = store.findBy('follows', f => f.followerId === req.params.id);
+    
+    // Get the users being followed
+    let following = follows.map(f => store.findById('users', f.followingId)).filter(Boolean);
+
+    // Apply sorting
+    if (sort.length > 0) {
+      following = store.sort(following, sort);
+    }
+
+    // Get total count before pagination
+    const totalCount = following.length;
+
+    // Apply pagination
+    const paginatedResult = store.paginate(following, pagination);
+    
+    res.json(userSerializer.serializeMany(paginatedResult.data, {
+      sparseFields: fields,
+      meta: {
+        count: paginatedResult.data.length,
+        total: totalCount,
+        page: {
+          number: pagination.page,
+          size: pagination.size,
+          totalPages: paginatedResult.meta.totalPages
+        }
+      }
+    }));
+  } catch (error) {
+    res.status(500).json(serializeError(500, 'Internal Server Error', error.message));
+  }
+});
+
+/**
+ * POST /api/users/:id/follow
+ * Follow a user
+ * Body: { followerId: "userId" }
+ */
+router.post('/:id/follow', (req, res) => {
+  try {
+    const { followerId } = req.body;
+    
+    if (!followerId) {
+      return res.status(400).json(
+        serializeError(400, 'Bad Request', 'Missing required field: followerId')
+      );
+    }
+
+    // Verify both users exist
+    const followingUser = store.findById('users', req.params.id);
+    if (!followingUser) {
+      return res.status(404).json(
+        serializeError(404, 'Not Found', `User with id '${req.params.id}' not found`)
+      );
+    }
+
+    const followerUser = store.findById('users', followerId);
+    if (!followerUser) {
+      return res.status(422).json(
+        serializeError(422, 'Unprocessable Entity', `Follower with id '${followerId}' not found`)
+      );
+    }
+
+    // Can't follow yourself
+    if (followerId === req.params.id) {
+      return res.status(422).json(
+        serializeError(422, 'Unprocessable Entity', 'Cannot follow yourself')
+      );
+    }
+
+    // Check if already following
+    const existingFollow = store.findBy('follows', f => 
+      f.followerId === followerId && f.followingId === req.params.id
+    )[0];
+
+    if (existingFollow) {
+      return res.status(409).json(
+        serializeError(409, 'Conflict', 'Already following this user')
+      );
+    }
+
+    // Create follow relationship
+    const follow = store.create('follows', {
+      followerId,
+      followingId: req.params.id
+    });
+
+    res.status(201).json({
+      data: {
+        type: 'follows',
+        id: String(follow.id),
+        attributes: {
+          createdAt: follow.createdAt
+        },
+        relationships: {
+          follower: { data: { type: 'users', id: String(follow.followerId) } },
+          following: { data: { type: 'users', id: String(follow.followingId) } }
+        }
+      }
+    });
+  } catch (error) {
+    res.status(400).json(serializeError(400, 'Bad Request', error.message));
+  }
+});
+
+/**
+ * DELETE /api/users/:id/follow
+ * Unfollow a user
+ * Body: { followerId: "userId" }
+ */
+router.delete('/:id/follow', (req, res) => {
+  try {
+    const { followerId } = req.body;
+    
+    if (!followerId) {
+      return res.status(400).json(
+        serializeError(400, 'Bad Request', 'Missing required field: followerId')
+      );
+    }
+
+    // Find the follow relationship
+    const follow = store.findBy('follows', f => 
+      f.followerId === followerId && f.followingId === req.params.id
+    )[0];
+
+    if (!follow) {
+      return res.status(404).json(
+        serializeError(404, 'Not Found', 'Follow relationship not found')
+      );
+    }
+
+    store.delete('follows', follow.id);
+    
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json(serializeError(500, 'Internal Server Error', error.message));
+  }
+});
+
 module.exports = router;
 

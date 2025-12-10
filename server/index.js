@@ -7,6 +7,8 @@ const usersRouter = require('./routes/users');
 const postsRouter = require('./routes/posts');
 const categoriesRouter = require('./routes/categories');
 const tagsRouter = require('./routes/tags');
+const commentsRouter = require('./routes/comments');
+const likesRouter = require('./routes/likes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +30,9 @@ app.get('/', (req, res) => {
       users: '/api/users',
       posts: '/api/posts',
       categories: '/api/categories',
-      tags: '/api/tags'
+      tags: '/api/tags',
+      comments: '/api/comments',
+      likes: '/api/likes'
     },
     documentation: 'See README.md and api-plan.md for details'
   });
@@ -67,6 +71,8 @@ app.use('/api/users', usersRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/tags', tagsRouter);
+app.use('/api/comments', commentsRouter);
+app.use('/api/likes', likesRouter);
 
 // 404 handler
 app.use((req, res) => {

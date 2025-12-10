@@ -229,8 +229,288 @@
       "updatedAt": "2024-12-04T10:00:00Z"
     }
   ],
-  "comments": [],
-  "likes": [],
-  "follows": []
+  "comments": [
+    {
+      "id": "1",
+      "body": "Great introduction! Really excited to try WarpDrive in our next project.",
+      "likeCount": 5,
+      "authorId": "2",
+      "postId": "1",
+      "parentCommentId": null,
+      "createdAt": "2024-11-02T10:00:00Z",
+      "updatedAt": "2024-11-02T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "body": "Thanks! Let me know if you have any questions during the migration.",
+      "likeCount": 2,
+      "authorId": "1",
+      "postId": "1",
+      "parentCommentId": "1",
+      "createdAt": "2024-11-02T11:00:00Z",
+      "updatedAt": "2024-11-02T11:00:00Z"
+    },
+    {
+      "id": "3",
+      "body": "This is exactly what I needed. The reactivity system is brilliant!",
+      "likeCount": 8,
+      "authorId": "5",
+      "postId": "2",
+      "parentCommentId": null,
+      "createdAt": "2024-11-16T10:00:00Z",
+      "updatedAt": "2024-11-16T10:00:00Z"
+    },
+    {
+      "id": "4",
+      "body": "How does this compare to Solid.js reactivity?",
+      "likeCount": 3,
+      "authorId": "3",
+      "postId": "2",
+      "parentCommentId": "3",
+      "createdAt": "2024-11-16T12:00:00Z",
+      "updatedAt": "2024-11-16T12:00:00Z"
+    },
+    {
+      "id": "5",
+      "body": "Similar concepts, but WarpDrive is focused on data management specifically. The fine-grained updates work really well for large datasets.",
+      "likeCount": 6,
+      "authorId": "1",
+      "postId": "2",
+      "parentCommentId": "4",
+      "createdAt": "2024-11-16T14:00:00Z",
+      "updatedAt": "2024-11-16T14:00:00Z"
+    },
+    {
+      "id": "6",
+      "body": "The TypeScript integration is so smooth. Love the type inference!",
+      "likeCount": 12,
+      "authorId": "4",
+      "postId": "3",
+      "parentCommentId": null,
+      "createdAt": "2024-11-21T10:00:00Z",
+      "updatedAt": "2024-11-21T10:00:00Z"
+    },
+    {
+      "id": "7",
+      "body": "Agreed! No more 'any' types everywhere.",
+      "likeCount": 4,
+      "authorId": "2",
+      "postId": "3",
+      "parentCommentId": "6",
+      "createdAt": "2024-11-21T11:00:00Z",
+      "updatedAt": "2024-11-21T11:00:00Z"
+    },
+    {
+      "id": "8",
+      "body": "We migrated from Redux last month. Best decision ever!",
+      "likeCount": 15,
+      "authorId": "5",
+      "postId": "4",
+      "parentCommentId": null,
+      "createdAt": "2024-11-26T10:00:00Z",
+      "updatedAt": "2024-11-26T10:00:00Z"
+    },
+    {
+      "id": "9",
+      "body": "How long did the migration take for your team?",
+      "likeCount": 1,
+      "authorId": "3",
+      "postId": "4",
+      "parentCommentId": "8",
+      "createdAt": "2024-11-26T11:00:00Z",
+      "updatedAt": "2024-11-26T11:00:00Z"
+    },
+    {
+      "id": "10",
+      "body": "About 2 weeks for a medium-sized app. The hardest part was unlearning Redux patterns!",
+      "likeCount": 7,
+      "authorId": "5",
+      "postId": "4",
+      "parentCommentId": "9",
+      "createdAt": "2024-11-26T12:00:00Z",
+      "updatedAt": "2024-11-26T12:00:00Z"
+    }
+  ],
+  "likes": [
+    {
+      "id": "1",
+      "userId": "2",
+      "likeableType": "post",
+      "likeableId": "1",
+      "createdAt": "2024-11-02T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "userId": "3",
+      "likeableType": "post",
+      "likeableId": "1",
+      "createdAt": "2024-11-02T11:00:00Z"
+    },
+    {
+      "id": "3",
+      "userId": "4",
+      "likeableType": "post",
+      "likeableId": "1",
+      "createdAt": "2024-11-02T12:00:00Z"
+    },
+    {
+      "id": "4",
+      "userId": "5",
+      "likeableType": "post",
+      "likeableId": "2",
+      "createdAt": "2024-11-16T10:00:00Z"
+    },
+    {
+      "id": "5",
+      "userId": "3",
+      "likeableType": "post",
+      "likeableId": "2",
+      "createdAt": "2024-11-16T11:00:00Z"
+    },
+    {
+      "id": "6",
+      "userId": "2",
+      "likeableType": "post",
+      "likeableId": "3",
+      "createdAt": "2024-11-21T10:00:00Z"
+    },
+    {
+      "id": "7",
+      "userId": "4",
+      "likeableType": "post",
+      "likeableId": "3",
+      "createdAt": "2024-11-21T11:00:00Z"
+    },
+    {
+      "id": "8",
+      "userId": "1",
+      "likeableType": "post",
+      "likeableId": "4",
+      "createdAt": "2024-11-26T10:00:00Z"
+    },
+    {
+      "id": "9",
+      "userId": "2",
+      "likeableType": "post",
+      "likeableId": "4",
+      "createdAt": "2024-11-26T11:00:00Z"
+    },
+    {
+      "id": "10",
+      "userId": "3",
+      "likeableType": "post",
+      "likeableId": "4",
+      "createdAt": "2024-11-26T12:00:00Z"
+    },
+    {
+      "id": "11",
+      "userId": "1",
+      "likeableType": "comment",
+      "likeableId": "1",
+      "createdAt": "2024-11-02T11:00:00Z"
+    },
+    {
+      "id": "12",
+      "userId": "3",
+      "likeableType": "comment",
+      "likeableId": "1",
+      "createdAt": "2024-11-02T12:00:00Z"
+    },
+    {
+      "id": "13",
+      "userId": "2",
+      "likeableType": "comment",
+      "likeableId": "3",
+      "createdAt": "2024-11-16T11:00:00Z"
+    },
+    {
+      "id": "14",
+      "userId": "4",
+      "likeableType": "comment",
+      "likeableId": "6",
+      "createdAt": "2024-11-21T11:00:00Z"
+    },
+    {
+      "id": "15",
+      "userId": "1",
+      "likeableType": "comment",
+      "likeableId": "8",
+      "createdAt": "2024-11-26T11:00:00Z"
+    }
+  ],
+  "follows": [
+    {
+      "id": "1",
+      "followerId": "2",
+      "followingId": "1",
+      "createdAt": "2024-02-01T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "followerId": "3",
+      "followingId": "1",
+      "createdAt": "2024-02-05T10:00:00Z"
+    },
+    {
+      "id": "3",
+      "followerId": "4",
+      "followingId": "1",
+      "createdAt": "2024-02-15T10:00:00Z"
+    },
+    {
+      "id": "4",
+      "followerId": "5",
+      "followingId": "1",
+      "createdAt": "2024-03-05T10:00:00Z"
+    },
+    {
+      "id": "5",
+      "followerId": "1",
+      "followingId": "2",
+      "createdAt": "2024-02-02T10:00:00Z"
+    },
+    {
+      "id": "6",
+      "followerId": "3",
+      "followingId": "2",
+      "createdAt": "2024-02-10T10:00:00Z"
+    },
+    {
+      "id": "7",
+      "followerId": "1",
+      "followingId": "3",
+      "createdAt": "2024-02-03T10:00:00Z"
+    },
+    {
+      "id": "8",
+      "followerId": "2",
+      "followingId": "3",
+      "createdAt": "2024-02-08T10:00:00Z"
+    },
+    {
+      "id": "9",
+      "followerId": "5",
+      "followingId": "3",
+      "createdAt": "2024-03-10T10:00:00Z"
+    },
+    {
+      "id": "10",
+      "followerId": "1",
+      "followingId": "4",
+      "createdAt": "2024-02-12T10:00:00Z"
+    },
+    {
+      "id": "11",
+      "followerId": "2",
+      "followingId": "5",
+      "createdAt": "2024-03-02T10:00:00Z"
+    },
+    {
+      "id": "12",
+      "followerId": "4",
+      "followingId": "5",
+      "createdAt": "2024-03-15T10:00:00Z"
+    }
+  ]
 }
 
