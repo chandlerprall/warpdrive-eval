@@ -1,4 +1,5 @@
 import { pageTitle } from 'ember-page-title';
+import { LinkTo } from '@ember/routing';
 
 <template>
   {{pageTitle "WarpDrive UI"}}
@@ -31,6 +32,11 @@ import { pageTitle } from 'ember-page-title';
         {{/if}}
       </div>
     </header>
+
+    <nav class="app-nav">
+      <LinkTo @route="application">Home</LinkTo>
+      <LinkTo @route="posts">Posts</LinkTo>
+    </nav>
 
     <main class="app-main">
       {{outlet}}

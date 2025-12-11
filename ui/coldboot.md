@@ -1,7 +1,7 @@
 # WarpDrive Evaluation - UI Cold Boot Guide
 
-**Last Updated:** December 10, 2024  
-**Current Status:** ✅ Iteration 0 Complete - Scaffold & Plumbing
+**Last Updated:** December 11, 2024  
+**Current Status:** ✅ Iteration 1 Complete - Read-Only Posts List
 
 ---
 
@@ -35,13 +35,13 @@ This project is an **exploratory learning journey** to understand and evaluate *
 ### Iteration Plan
 - **`ui/plan.md`**: Detailed roadmap with 8 iterations
   - Iteration 0: ✅ Scaffold & plumbing (COMPLETE)
-  - Iteration 1: Read-only list (posts index)
+  - Iteration 1: ✅ Read-only list (posts index) (COMPLETE)
   - Iteration 2: Detail views & relationships
   - Iteration 3-8: Mutations, social features, caching, TypeScript, polish
 
 ---
 
-## ✅ Current State (Iteration 0 Complete)
+## ✅ Current State (Iteration 1 Complete)
 
 ### What's Been Built
 
@@ -82,6 +82,42 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - **Core WarpDrive**: `@warp-drive/core@~5.6.0`, `@warp-drive/json-api@~5.6.0`
 - **No `@ember-data/` imports**: All refactored to use `@warp-drive/*` packages directly
 - Ember 6.8.x with Embroider/Vite build pipeline
+
+#### 6. **Post Schema** (`app/models/post.js`)
+- ResourceSchema with all post attributes (title, slug, body, excerpt, status, timestamps, counts)
+- Registered with store during initialization
+- Uses legacy mode for Ember compatibility
+- **Key Learning**: Schema `type` must match API response exactly (`posts` not `post`)
+
+#### 7. **Full Store Configuration** (`app/services/store.js`)
+- Implements required methods: `createSchemaService()`, `createCache()`, `instantiateRecord()`, `teardownRecord()`
+- Uses `SchemaService` from `@warp-drive/core/reactive` for schema management
+- Uses `JSONAPICache` from `@warp-drive/json-api` for cache storage
+- Automatically registers schemas on construction
+
+#### 8. **Request Builder Pattern** (`app/builders/posts.js`)
+- `queryPublishedPosts()` builder following WarpDrive best practices
+- Returns plain request objects (not function calls)
+- **Key Learning**: `headers` must be `new Headers({...})` not plain objects
+- Properly formats JSON:API query params (`filter[status]`, `page[size]`, etc.)
+
+#### 9. **Posts Route** (`app/routes/posts.js`)
+- Uses custom builder to fetch published posts
+- Handles errors gracefully (no throws)
+- Returns data + meta + rawResponse for debugging
+- Goes through full request pipeline: BaseURL → Logging → Fetch → Cache
+
+#### 10. **Posts Template** (`app/templates/posts.gjs`)
+- Displays post list with cards
+- Shows metadata (status badges, counts, dates)
+- Collapsible debug panel with raw JSON:API response
+- Error and empty states
+- Post count from API meta
+
+#### 11. **Navigation & Routing**
+- Added Posts link to main navigation
+- Route registered in router
+- Basic styling for navigation and posts list
 
 ---
 
@@ -129,42 +165,47 @@ ui/
 │   │   └── api.js                # API URL helpers
 │   ├── utils/
 │   │   └── request-manager.js    # Custom RequestManager with logging
+│   ├── builders/
+│   │   └── posts.js              # Request builders for post queries
+│   ├── models/
+│   │   └── post.js               # Post ResourceSchema
 │   ├── services/
-│   │   └── store.js              # WarpDrive Store service
+│   │   └── store.js              # WarpDrive Store with schema/cache
 │   ├── routes/
-│   │   └── application.js        # Health check logic
+│   │   ├── application.js        # Health check logic
+│   │   └── posts.js              # Posts list route
 │   ├── templates/
-│   │   └── application.gjs       # Shell with status card
+│   │   ├── application.gjs       # Shell with status card & nav
+│   │   └── posts.gjs             # Posts list with debug panel
 │   └── styles/
-│       └── app.css               # Basic styling
+│       └── app.css               # Styling for all pages
 ```
 
 ---
 
-## 🧭 Next Steps (Iteration 1)
+## 🧭 Next Steps (Iteration 2)
 
 See `plan.md` for full details. Summary:
 
-1. **Define Post Schema** (schema-record)
-   - Create `app/models/post.js` with ResourceSchema
-   - Fields: title, slug, body, excerpt, status, publishedAt, counts
-   - No relationships yet (iteration 2)
+1. **Add Relationship Schemas**
+   - User schema (author relationship)
+   - Category schema
+   - Tag schema
+   - Update Post schema to include relationships
 
-2. **Build Posts Index Route**
-   - Route: `/posts` → fetch published posts
-   - Use `store.request()` with query builder from `@warp-drive/json-api`
-   - Template: Simple list of post titles (no styling needed yet)
+2. **Build Post Detail Route**
+   - Route: `/posts/:id` → fetch single post with includes
+   - Use `include=author,category,tags` query param
+   - Show related data in template
 
-3. **Learn & Document**
-   - How schema registration works
-   - How to use query builders
-   - How data flows from request → cache → component
+3. **Build User Detail Route**
+   - Route: `/users/:id` → fetch user and their posts
+   - Display user info and authored posts
 
-### Success Criteria for Iteration 1
-- Schema defined and registered
-- `/posts` route renders a list of post titles from API
-- No errors in console
-- Request/response logs visible in console
+4. **Learn & Document**
+   - How relationships work in schemas
+   - How `include` works with JSON:API
+   - How related data is accessed in templates
 
 ---
 
@@ -177,18 +218,34 @@ See `plan.md` for full details. Summary:
 
 ### 2. Request Manager Architecture
 - All HTTP goes through `store.requestManager`
-- Middleware chain: BaseURL → Logging → Fetch
+- Middleware chain: BaseURL → Logging → Fetch → CacheHandler
 - Absolute URLs bypass the BaseURLHandler (e.g., health check)
 
-### 3. Configuration Strategy
+### 3. Builder Pattern for Requests
+- All requests use plain builder functions (not wrapper functions)
+- Builders return plain objects: `{ url, method, headers }`
+- Pass builder result directly to `store.request()`
+- Headers must be `new Headers({...})` instances
+
+### 4. Schema Registration
+- Schemas define resource types and their fields
+- Schema `type` must match API response `type` exactly (e.g., `posts` not `post`)
+- Register schemas via `store.schema.registerResource()`
+- Use `legacy: true` mode for Ember apps
+
+### 5. Configuration Strategy
 - API connection configured via environment variables
 - `API_HOST` and `API_NAMESPACE` can be overridden
 - Helpers in `app/config/api.js` provide single source of truth
 
-### 4. Learning-First Development
+### 6. Learning-First Development
 - Console logging intentionally verbose for learning
 - Each iteration builds on previous (no rewrites)
 - Document surprises and "aha!" moments as we go
+- Explore multiple valid paths when unclear; not always one "correct" answer
+- Document alternative approaches even when both work
+- Sometimes the best understanding comes from exploring multiple paths and synthesizing insights
+- Iteration over perfection: try, learn from errors/docs, adapt
 
 ---
 
@@ -199,9 +256,23 @@ See `plan.md` for full details. Summary:
 - Plain functions don't work (even arrow functions in handler chain)
 - Pattern: `{ async request(context, next) { ... } }`
 
-### Store Instantiation
-- Must call `super(...args)` before accessing `this` in constructor
-- RequestManager should be assigned in constructor, not class field
+### Store Configuration Requirements
+- Must implement `createSchemaService()` - returns SchemaService instance
+- Must implement `createCache()` - returns Cache instance (e.g., JSONAPICache)
+- Must implement `instantiateRecord()` - creates reactive records from cache
+- Must implement `teardownRecord()` - cleans up records
+- Call `super(...args)` before accessing `this` in constructor
+
+### Schema Type Matching
+- Schema `type` field MUST match API response `type` exactly
+- Case-sensitive and character-for-character match required
+- Common mistake: `type: 'post'` when API returns `"type": "posts"`
+
+### Builder Pattern Requirements
+- Builders return plain objects: `{ url, method, headers, body }`
+- Headers must be `new Headers({...})` instances, not plain objects
+- Pass builder result directly to `store.request()`: `store.request(myBuilder())`
+- Don't wrap builders in other function calls before passing to store
 
 ### Import Paths
 - Use full module specifiers: `ui/utils/request-manager` not `../utils/...`
@@ -227,14 +298,22 @@ curl -X POST http://localhost:3000/reset   # Reset to seed data
 
 ---
 
+## 🤔 Questions Answered (Iteration 1)
+
+- ✅ **How does schema registration work?** Call `store.schema.registerResource()` with schema definition
+- ✅ **When do we need `@warp-drive/json-api`?** For `JSONAPICache` to handle JSON:API formatted responses
+- ✅ **What's the difference between `store.request()` and `store.requestManager.request()`?** 
+  - `store.request()` goes through cache and creates reactive records
+  - `requestManager.request()` is lower-level, just executes HTTP
+- ✅ **How do builders work?** Return plain objects with `{ url, method, headers }`, pass directly to `store.request()`
+
 ## 🤔 Questions for Future Exploration
 
-- How does schema registration work with `store.registerSchema()`?
-- When do we need `@warp-drive/json-api` vs `@warp-drive/core`?
-- What's the difference between `store.request()` and `store.requestManager.request()`?
 - How do we handle relationships in schemas?
 - When should we use `store.peekRecord()` vs `store.findRecord()`?
 - How does the cache invalidation strategy work?
+- How do included resources work with relationships?
+- What happens when we fetch the same resource multiple times?
 
 ---
 
@@ -261,9 +340,25 @@ By the end of this project, we should understand:
 7. 🔜 How to handle mutations (create/update/delete)
 8. 🔜 TypeScript integration patterns
 
+And be able to synthesize the knowledge into a concise report that a team of human frontend developers can understand and use to build a modern Ember app using WarpDrive.
+
+## 🤖 LLM / Agent rules
+
+- After each iteration you should update this file to reflect the current state of the project.
+- Remember to document findings, "aha!" moments, etc.
+- Also record any questions that arise during the iteration.
+
 ---
 
-**Ready to continue?** Start with `plan.md` Iteration 1, or jump into `kb/README.md` to learn more about WarpDrive concepts before building.
+**Ready to continue?** Start with `plan.md` Iteration 2 (Detail Views & Relationships), or review what we learned in Iteration 1.
 
 **Having issues?** Check console logs (RequestManager logs everything), verify the API server is running, and review this file's "Known Issues" section.
+
+## 💡 Key Learnings from Iteration 1
+
+1. **Store requires 4 methods**: `createSchemaService()`, `createCache()`, `instantiateRecord()`, `teardownRecord()`
+2. **Schema type matching is critical**: Must match API response exactly (e.g., `posts` not `post`)
+3. **Builder pattern is clean**: Return plain objects, not wrapped function calls
+4. **Headers must be Headers instances**: Use `new Headers({...})` not plain objects
+5. **Data flows smoothly**: Request → RequestManager → Cache → Reactive Records → Template
 
