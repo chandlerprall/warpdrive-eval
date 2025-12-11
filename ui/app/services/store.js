@@ -1,74 +1,64 @@
-import { CacheHandler, Store } from '@warp-drive/core';
-import {
-  SchemaService,
-  registerDerivations,
-  instantiateRecord,
-  teardownRecord,
-} from '@warp-drive/core/reactive';
+import { useLegacyStore } from '@warp-drive/legacy';
 import { JSONAPICache } from '@warp-drive/json-api';
-import { createRequestManager } from 'ui/utils/request-manager';
+import { BaseURLHandler, LoggingHandler } from 'ui/utils/request-manager';
 import { registerPostSchema } from 'ui/models/post';
 
 /**
- * Application Store Service
+ * Application Store Service (useLegacyStore Implementation)
  *
- * Extends WarpDrive's Store with:
- * - Custom RequestManager (with BaseURL handler and logging)
- * - SchemaService for managing resource schemas
- * - JSONAPICache for storing and managing data
- * - Schema registration for our models
+ * Uses WarpDrive's factory from @warp-drive/legacy which automatically provides:
+ * - SchemaService with derivations registered
+ * - JSONAPICache for JSON:API responses
+ * - RequestManager with Fetch handler
+ * - CacheHandler integration
+ * - Default cache policy (15m hard / 30s soft expiration)
+ * - instantiateRecord/teardownRecord implementations
+ *
+ * WHY "LEGACY" IS ACTUALLY FORWARD-COMPATIBLE:
+ * Despite the name, this uses WarpDrive's modern patterns. The "legacy" refers to
+ * supporting migration features (linksMode, legacyRequests, modelFragments) that
+ * we can disable. It's the v5.x equivalent of useRecommendedStore (coming in v6).
+ *
+ * This approach is endorsed by the WarpDrive team for v5.x apps moving forward.
+ *
+ * PROS:
+ * - Less boilerplate (no manual method implementations)
+ * - Factory pattern with sensible defaults
+ * - Handles all the wiring automatically
+ * - Can disable legacy features we don't need
+ *
+ * CONS:
+ * - Name suggests "legacy" but it's actually modern
+ * - Requires @warp-drive/legacy package
+ * - Less explicit control (more "magic")
+ *
+ * See also: store-manual.js.bak for the manual implementation approach
  */
-export default class ApplicationStoreService extends Store {
+const StoreClass = useLegacyStore({
+  // Cache implementation for storing JSON:API data
+  cache: JSONAPICache,
+
+  // Legacy features - all disabled for modern patterns
+  linksMode: false,           // Don't use links-based relationships
+  legacyRequests: false,      // Don't use legacy request methods
+  modelFragments: false,      // Don't use model fragments
+
+  // Custom request handlers (BaseURL, Logging)
+  // Fetch is automatically added at the end
+  handlers: [BaseURLHandler, LoggingHandler],
+
+  // Schemas can be registered here or after instantiation
+  // We'll register after for now to keep pattern from Iteration 1
+  schemas: [],
+});
+
+// Extend the generated class to add schema registration in constructor
+export default class ApplicationStoreService extends StoreClass {
   constructor(...args) {
     super(...args);
 
-    // Set up the request manager with our custom handlers
-    this.requestManager = createRequestManager().useCache(CacheHandler);
-
     // Register resource schemas after the store is fully initialized
-    // This ensures store.schema is available
     registerPostSchema(this);
-  }
-
-  /**
-   * Create the schema service for managing resource schemas
-   * This is called by the Store during initialization
-   */
-  createSchemaService() {
-    const schema = new SchemaService();
-    registerDerivations(schema);
-    return schema;
-  }
-
-  /**
-   * Create the cache for storing and managing data
-   * JSONAPICache understands JSON:API format responses
-   *
-   * @param {CacheCapabilitiesManager} capabilities - Cache capabilities
-   */
-  createCache(capabilities) {
-    return new JSONAPICache(capabilities);
-  }
-
-  /**
-   * Instantiate a record from the cache
-   * Creates reactive record instances from cached data
-   *
-   * @param {ResourceKey} identifier - The resource identifier
-   * @param {Object} createArgs - Optional creation arguments
-   */
-  instantiateRecord(identifier, createArgs) {
-    return instantiateRecord(this, identifier, createArgs);
-  }
-
-  /**
-   * Teardown a record when it's no longer needed
-   * Cleans up reactive subscriptions and resources
-   *
-   * @param {unknown} record - The record to teardown
-   */
-  teardownRecord(record) {
-    return teardownRecord(record);
   }
 }
 

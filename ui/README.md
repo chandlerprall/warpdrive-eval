@@ -1,7 +1,58 @@
-# ui
+# WarpDrive Evaluation - UI
 
-This README outlines the details of collaborating on this Ember application.
-A short introduction of this app could easily go here.
+Modern Ember application exploring WarpDrive (next-gen ember-data) patterns.
+
+**📖 Documentation:** See [`docs/`](./docs/) folder  
+**🚀 Quick Start:** See [`docs/coldboot.md`](./docs/coldboot.md)  
+**🗺️ Roadmap:** See [`docs/plan.md`](./docs/plan.md)
+
+---
+
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server (http://localhost:4200)
+npm start
+
+# Run tests
+npm test
+
+# Lint
+npm run lint
+```
+
+**Requires:** API server running at `http://localhost:3000` (see `/server/README.md`)
+
+---
+
+## Current Status
+
+**Iteration:** 1 🔄 Partial (Posts complete, Users/Categories/Tags pending)  
+**WarpDrive Version:** 5.8.0  
+**Features Working:** Health check, Posts list with filtering  
+**Next:** Complete Iteration 1 (users, categories, tags lists) or move to Iteration 2
+
+---
+
+## Documentation
+
+All project documentation is in the [`docs/`](./docs/) folder:
+
+- **[coldboot.md](./docs/coldboot.md)** - 📖 Main guide (start here!)
+- **[plan.md](./docs/plan.md)** - 🗺️ 8-iteration roadmap
+- **[ITERATION-1-SUMMARY.md](./docs/ITERATION-1-SUMMARY.md)** - 📊 Iteration 1 learnings
+- **[STORE-CONFIGURATION.md](./docs/STORE-CONFIGURATION.md)** - 🔍 Store exploration & comparison
+
+The `coldboot.md` file includes a documentation guide with navigation by use case.
+
+---
+
+## Project Structure
+
+This is a standard Ember application. Below is original Ember README content.
 
 ## Prerequisites
 

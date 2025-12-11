@@ -1,8 +1,15 @@
-import { RequestManager, Fetch } from '@warp-drive/core';
 import { apiBaseURL } from 'ui/config/api';
 
-// Handler that prefixes relative URLs with the API base URL
-const BaseURLHandler = {
+/**
+ * Handler that prefixes relative URLs with the API base URL
+ *
+ * This handler intercepts requests and adds the configured API base URL
+ * to any relative URLs, allowing routes/builders to use paths like `/posts`
+ * instead of `http://localhost:3000/api/posts`.
+ *
+ * Absolute URLs (starting with http:// or https://) are left unchanged.
+ */
+export const BaseURLHandler = {
   async request(context, next) {
     const { request } = context;
 
@@ -22,8 +29,13 @@ const BaseURLHandler = {
   },
 };
 
-// Handler that logs request/response timing
-const LoggingHandler = {
+/**
+ * Handler that logs request/response timing
+ *
+ * Logs every request and response to the console with timing information.
+ * Useful for debugging and understanding the request flow during development.
+ */
+export const LoggingHandler = {
   async request(context, next) {
     const { request } = context;
     const method = request?.method || 'GET';
@@ -40,12 +52,4 @@ const LoggingHandler = {
     return response;
   },
 };
-
-export function createRequestManager() {
-  const manager = new RequestManager();
-
-  manager.use([BaseURLHandler, LoggingHandler, Fetch]);
-
-  return manager;
-}
 

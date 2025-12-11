@@ -1,7 +1,7 @@
 # WarpDrive Evaluation - UI Cold Boot Guide
 
 **Last Updated:** December 11, 2024  
-**Current Status:** ✅ Iteration 1 Complete - Read-Only Posts List
+**Current Status:** 🔄 Iteration 1 Partial - Posts List Complete (Users/Categories/Tags pending)
 
 ---
 
@@ -35,13 +35,13 @@ This project is an **exploratory learning journey** to understand and evaluate *
 ### Iteration Plan
 - **`ui/plan.md`**: Detailed roadmap with 8 iterations
   - Iteration 0: ✅ Scaffold & plumbing (COMPLETE)
-  - Iteration 1: ✅ Read-only list (posts index) (COMPLETE)
+  - Iteration 1: 🔄 Read-only lists (Posts ✅ | Users ❌ | Categories ❌ | Tags ❌)
   - Iteration 2: Detail views & relationships
   - Iteration 3-8: Mutations, social features, caching, TypeScript, polish
 
 ---
 
-## ✅ Current State (Iteration 1 Complete)
+## 🔄 Current State (Iteration 1 Partial - Posts Complete)
 
 ### What's Been Built
 
@@ -79,9 +79,10 @@ This project is an **exploratory learning journey** to understand and evaluate *
   - Basic styling in `app/styles/app.css`
 
 #### 5. **Dependencies**
-- **Core WarpDrive**: `@warp-drive/core@~5.6.0`, `@warp-drive/json-api@~5.6.0`
+- **Core WarpDrive**: `@warp-drive/core@~5.8.0`, `@warp-drive/json-api@~5.8.0`, `@warp-drive/legacy@~5.8.0`
 - **No `@ember-data/` imports**: All refactored to use `@warp-drive/*` packages directly
 - Ember 6.8.x with Embroider/Vite build pipeline
+- Note: Using `@warp-drive/legacy` for `useLegacyStore` factory (modern patterns only)
 
 #### 6. **Post Schema** (`app/models/post.js`)
 - ResourceSchema with all post attributes (title, slug, body, excerpt, status, timestamps, counts)
@@ -90,10 +91,12 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - **Key Learning**: Schema `type` must match API response exactly (`posts` not `post`)
 
 #### 7. **Full Store Configuration** (`app/services/store.js`)
-- Implements required methods: `createSchemaService()`, `createCache()`, `instantiateRecord()`, `teardownRecord()`
-- Uses `SchemaService` from `@warp-drive/core/reactive` for schema management
-- Uses `JSONAPICache` from `@warp-drive/json-api` for cache storage
-- Automatically registers schemas on construction
+- Uses `useLegacyStore` factory from `@warp-drive/legacy` (v5.8.0)
+- All legacy features disabled (`linksMode: false`, etc.) for pure modern patterns
+- Automatically provides: SchemaService, JSONAPICache, RequestManager, cache policy
+- Custom handlers injected via `handlers` option
+- Schemas registered on construction
+- 60% less code than manual implementation (~30 lines vs ~75 lines)
 
 #### 8. **Request Builder Pattern** (`app/builders/posts.js`)
 - `queryPublishedPosts()` builder following WarpDrive best practices
@@ -183,29 +186,41 @@ ui/
 
 ---
 
-## 🧭 Next Steps (Iteration 2)
+## 🧭 Next Steps (Complete Iteration 1)
 
-See `plan.md` for full details. Summary:
+### Remaining Work for Iteration 1
 
-1. **Add Relationship Schemas**
-   - User schema (author relationship)
-   - Category schema
-   - Tag schema
-   - Update Post schema to include relationships
+According to `plan.md`, Iteration 1 requires implementing list routes for **all** these resources:
 
-2. **Build Post Detail Route**
-   - Route: `/posts/:id` → fetch single post with includes
-   - Use `include=author,category,tags` query param
-   - Show related data in template
+1. **User Schema & Route** ❌ Not started
+   - Define user schema (username, displayName, email, bio, etc.)
+   - Create `/users` route with list
+   - Template showing user cards
+   - Register schema with store
 
-3. **Build User Detail Route**
-   - Route: `/users/:id` → fetch user and their posts
-   - Display user info and authored posts
+2. **Category Schema & Route** ❌ Not started
+   - Define category schema (name, slug, description)
+   - Create `/categories` route with list
+   - Template showing category list
+   - Register schema with store
 
-4. **Learn & Document**
-   - How relationships work in schemas
-   - How `include` works with JSON:API
-   - How related data is accessed in templates
+3. **Tag Schema & Route** ❌ Not started
+   - Define tag schema (name, slug)
+   - Create `/tags` route with list
+   - Template showing tag cloud/list
+   - Register schema with store
+
+4. **Tests** ❌ Not started
+   - Route rendering smoke tests
+   - Contract tests for list fetch shapes
+
+### After Full Iteration 1, Then Move to Iteration 2
+
+Once we have all 4 list routes working (posts, users, categories, tags), we'll move to:
+- Post detail route with `include=author,category,tags`
+- User detail route with their posts
+- Relationship handling in schemas
+- etc.
 
 ---
 
@@ -317,11 +332,41 @@ curl -X POST http://localhost:3000/reset   # Reset to seed data
 
 ---
 
-## 📖 Related Documentation
+## 📖 Documentation Guide
 
-- **Local Docs**: `/kb/README.md` (navigation guide)
+### Docs in This Folder
+
+- **coldboot.md** (this file) - Main guide, current status, setup, architecture
+- **plan.md** - 8-iteration roadmap with goals and success criteria
+- **ITERATION-1-SUMMARY.md** - Technical summary of what we built (posts)
+- **STORE-CONFIGURATION.md** - Deep dive: Store setup exploration + comparison
+
+### Navigation by Use Case
+
+**"I'm new here"**
+1. Read this file (coldboot.md) - overview and current status
+2. Read `plan.md` - understand the roadmap
+3. Review `ITERATION-1-SUMMARY.md` - see what's working
+
+**"I want to understand Store configuration"**
+1. Read `STORE-CONFIGURATION.md` - exploration journey + technical comparison
+2. Look at `app/services/store.js` - current implementation
+3. Compare with `app/services/store-manual.js.bak` - manual reference
+
+**"I'm continuing development"**
+1. Check this file → "Next Steps" section above
+2. Review `plan.md` for current iteration details
+3. Read previous iteration summary for context
+
+**"I hit an issue"**
+1. Check this file → "Known Issues & Quirks" section
+2. Review `STORE-CONFIGURATION.md` for Store-related issues
+3. Look at iteration summaries for similar problems solved
+
+### External Documentation
+
+- **Local KB**: `/kb/README.md` (WarpDrive documentation from official site)
 - **API Docs**: `/server/API-DOCUMENTATION.md` (endpoint reference)
-- **Plan**: `ui/plan.md` (iteration roadmap)
 - **Official Site**: https://canary.warp-drive.io/
 - **GitHub**: https://github.com/warp-drive-data/warp-drive
 - **Discord**: https://discord.gg/PHBbnWJx5S
@@ -350,15 +395,44 @@ And be able to synthesize the knowledge into a concise report that a team of hum
 
 ---
 
-**Ready to continue?** Start with `plan.md` Iteration 2 (Detail Views & Relationships), or review what we learned in Iteration 1.
+**Ready to continue?** 
+- Complete Iteration 1: Add schemas/routes for users, categories, and tags
+- Or skip to Iteration 2: Detail views & relationships (we can add users/categories/tags as needed)
+- Review what we learned so far in ITERATION-1-SUMMARY.md
 
 **Having issues?** Check console logs (RequestManager logs everything), verify the API server is running, and review this file's "Known Issues" section.
 
-## 💡 Key Learnings from Iteration 1
+## 💡 Key Learnings from Iteration 1 (Posts Portion)
 
 1. **Store requires 4 methods**: `createSchemaService()`, `createCache()`, `instantiateRecord()`, `teardownRecord()`
 2. **Schema type matching is critical**: Must match API response exactly (e.g., `posts` not `post`)
 3. **Builder pattern is clean**: Return plain objects, not wrapped function calls
 4. **Headers must be Headers instances**: Use `new Headers({...})` not plain objects
 5. **Data flows smoothly**: Request → RequestManager → Cache → Reactive Records → Template
+
+## 🔀 Alternative Approaches Explored
+
+### Store Configuration (see `STORE-APPROACHES.md`)
+We explored **three approaches** for configuring the Store:
+
+1. **Manual Implementation** (Approach 1)
+   - Extend `Store` and implement 4 methods manually
+   - Full control, explicit, educational
+   - More boilerplate (~75 lines)
+   - Saved in `store-manual.js.bak` for reference
+
+2. **useRecommendedStore** (Approach 2)
+   - Found in WarpDrive source code
+   - **Discovery**: Not yet exported in v5.6.0!
+   - Coming in v6+ as the recommended approach
+   - Attempted but couldn't use yet
+
+3. **useLegacyStore** (Approach 3) ✅ **Current Choice**
+   - Available now from `@warp-drive/legacy`
+   - Factory function with configuration object
+   - Less boilerplate (~30 lines)
+   - Disable legacy flags for pure modern patterns
+   - Current implementation in `store.js`
+
+**Why we chose useLegacyStore:** After learning the manual approach, we discovered `useRecommendedStore` isn't exported yet. `useLegacyStore` provides the same factory benefits while we wait for v6. By disabling all legacy features, we get pure modern WarpDrive patterns with less boilerplate. Perfect example of exploring multiple paths and finding the practical solution!
 
