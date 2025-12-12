@@ -68,7 +68,7 @@ class DebugPanel extends Component {
       </div>
 
       {{! Debug panel for learning - shows raw API response }}
-      <DebugPanel @json={{JSON.stringify @model.rawResponse null 2}} />
+      <DebugPanel @json={{JSON.stringify @model.rawResponse.content null 2}} />
     {{else}}
       <p class="loading">Loading posts...</p>
     {{/if}}

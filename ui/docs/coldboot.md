@@ -292,6 +292,12 @@ See `plan.md` for full details. Summary:
 - Use full module specifiers: `ui/utils/request-manager` not `../utils/...`
 - Ember resolver handles these via `exports` in `package.json`
 
+### JSON.stringify and Response Objects
+- Don't stringify the entire response object (has circular references)
+- Use `response.content` instead of `response` for JSON display
+- The full response contains store references which create circular structures
+- Safe to stringify: `response.content`, `response.content.data`, `response.content.meta`
+
 ---
 
 ## 📝 Useful Commands
