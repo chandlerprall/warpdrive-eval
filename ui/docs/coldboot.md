@@ -1,7 +1,7 @@
 # WarpDrive Evaluation - UI Cold Boot Guide
 
 **Last Updated:** December 11, 2024  
-**Current Status:** 🔄 Iteration 1 Partial - Posts List Complete (Users/Categories/Tags pending)
+**Current Status:** ✅ Iteration 1 Complete - Read-Only Lists (Posts, Users, Categories, Tags)
 
 ---
 
@@ -35,13 +35,13 @@ This project is an **exploratory learning journey** to understand and evaluate *
 ### Iteration Plan
 - **`ui/plan.md`**: Detailed roadmap with 8 iterations
   - Iteration 0: ✅ Scaffold & plumbing (COMPLETE)
-  - Iteration 1: 🔄 Read-only lists (Posts ✅ | Users ❌ | Categories ❌ | Tags ❌)
+  - Iteration 1: ✅ Read-only lists (Posts, Users, Categories, Tags) (COMPLETE)
   - Iteration 2: Detail views & relationships
   - Iteration 3-8: Mutations, social features, caching, TypeScript, polish
 
 ---
 
-## 🔄 Current State (Iteration 1 Partial - Posts Complete)
+## ✅ Current State (Iteration 1 Complete)
 
 ### What's Been Built
 
@@ -84,43 +84,52 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - Ember 6.8.x with Embroider/Vite build pipeline
 - Note: Using `@warp-drive/legacy` for `useLegacyStore` factory (modern patterns only)
 
-#### 6. **Post Schema** (`app/models/post.js`)
-- ResourceSchema with all post attributes (title, slug, body, excerpt, status, timestamps, counts)
-- Registered with store during initialization
-- Uses legacy mode for Ember compatibility
+#### 6. **Resource Schemas** ✅
+- **Post** (`app/models/post.js`) - title, slug, body, excerpt, status, timestamps, counts
+- **User** (`app/models/user.js`) - username, email, displayName, bio, avatarUrl, timestamps
+- **Category** (`app/models/category.js`) - name, slug, description, postCount
+- **Tag** (`app/models/tag.js`) - name, slug, postCount
+- All registered with store during initialization
+- All use legacy mode for Ember compatibility
 - **Key Learning**: Schema `type` must match API response exactly (`posts` not `post`)
 
-#### 7. **Full Store Configuration** (`app/services/store.js`)
+#### 7. **Full Store Configuration** (`app/services/store.js`) ✅
 - Uses `useLegacyStore` factory from `@warp-drive/legacy` (v5.8.0)
 - All legacy features disabled (`linksMode: false`, etc.) for pure modern patterns
 - Automatically provides: SchemaService, JSONAPICache, RequestManager, cache policy
 - Custom handlers injected via `handlers` option
-- Schemas registered on construction
+- All 4 schemas registered on construction
 - 60% less code than manual implementation (~30 lines vs ~75 lines)
 
-#### 8. **Request Builder Pattern** (`app/builders/posts.js`)
-- `queryPublishedPosts()` builder following WarpDrive best practices
-- Returns plain request objects (not function calls)
+#### 8. **Request Builders** ✅
+- **Posts** (`app/builders/posts.js`) - `queryPublishedPosts()` with filtering
+- **Users** (`app/builders/users.js`) - `queryUsers()` with pagination/sorting
+- **Categories** (`app/builders/categories.js`) - `queryCategories()` with sorting
+- **Tags** (`app/builders/tags.js`) - `queryTags()` with sorting
+- All follow WarpDrive builder pattern (return plain objects)
 - **Key Learning**: `headers` must be `new Headers({...})` not plain objects
-- Properly formats JSON:API query params (`filter[status]`, `page[size]`, etc.)
 
-#### 9. **Posts Route** (`app/routes/posts.js`)
-- Uses custom builder to fetch published posts
-- Handles errors gracefully (no throws)
-- Returns data + meta + rawResponse for debugging
-- Goes through full request pipeline: BaseURL → Logging → Fetch → Cache
+#### 9. **List Routes** ✅
+- **Posts** (`app/routes/posts.js`) - Fetches published posts with filtering
+- **Users** (`app/routes/users.js`) - Fetches all users with sorting
+- **Categories** (`app/routes/categories.js`) - Fetches all categories
+- **Tags** (`app/routes/tags.js`) - Fetches all tags
+- All use builder pattern and handle errors gracefully
+- All return data + meta + rawResponse for debugging
 
-#### 10. **Posts Template** (`app/templates/posts.gjs`)
-- Displays post list with cards
-- Shows metadata (status badges, counts, dates)
-- Collapsible debug panel with raw JSON:API response
-- Error and empty states
-- Post count from API meta
+#### 10. **List Templates** ✅
+- **Posts** (`app/templates/posts.gjs`) - Card layout with metadata and counts
+- **Users** (`app/templates/users.gjs`) - Card layout with avatars and bios
+- **Categories** (`app/templates/categories.gjs`) - Grid layout with descriptions
+- **Tags** (`app/templates/tags.gjs`) - Tag cloud with post counts
+- All include collapsible debug panels with raw JSON:API responses
+- All have error and empty states
 
-#### 11. **Navigation & Routing**
-- Added Posts link to main navigation
-- Route registered in router
-- Basic styling for navigation and posts list
+#### 11. **Navigation & Routing** ✅
+- Navigation with Home, Posts, Users, Categories, Tags links
+- All routes registered in router
+- Active state styling
+- Responsive design
 
 ---
 
@@ -186,41 +195,31 @@ ui/
 
 ---
 
-## 🧭 Next Steps (Complete Iteration 1)
+## 🧭 Next Steps (Iteration 2)
 
-### Remaining Work for Iteration 1
+See `plan.md` for full details. Summary:
 
-According to `plan.md`, Iteration 1 requires implementing list routes for **all** these resources:
+1. **Add Relationships to Schemas**
+   - Update Post schema: author (belongs-to user), category (belongs-to), tags (has-many)
+   - Update User schema: posts (has-many)
+   - Update Category schema: posts (has-many)
+   - Update Tag schema: posts (has-many)
 
-1. **User Schema & Route** ❌ Not started
-   - Define user schema (username, displayName, email, bio, etc.)
-   - Create `/users` route with list
-   - Template showing user cards
-   - Register schema with store
+2. **Build Detail Routes**
+   - Post detail: `/posts/:id` with `include=author,category,tags`
+   - User detail: `/users/:id` with their posts
+   - Show related data in templates
 
-2. **Category Schema & Route** ❌ Not started
-   - Define category schema (name, slug, description)
-   - Create `/categories` route with list
-   - Template showing category list
-   - Register schema with store
+3. **Learn & Document**
+   - How relationships work in schemas (`kind: 'resource'`, `kind: 'collection'`)
+   - How `include` parameter loads related data
+   - How to access included resources in templates
+   - How the cache handles relationships
 
-3. **Tag Schema & Route** ❌ Not started
-   - Define tag schema (name, slug)
-   - Create `/tags` route with list
-   - Template showing tag cloud/list
-   - Register schema with store
-
-4. **Tests** ❌ Not started
-   - Route rendering smoke tests
-   - Contract tests for list fetch shapes
-
-### After Full Iteration 1, Then Move to Iteration 2
-
-Once we have all 4 list routes working (posts, users, categories, tags), we'll move to:
-- Post detail route with `include=author,category,tags`
-- User detail route with their posts
-- Relationship handling in schemas
-- etc.
+### Optional: Tests
+- Route rendering smoke tests
+- Contract tests for list fetch shapes
+- (Can be deferred to Iteration 8 if needed)
 
 ---
 
@@ -402,7 +401,7 @@ And be able to synthesize the knowledge into a concise report that a team of hum
 
 **Having issues?** Check console logs (RequestManager logs everything), verify the API server is running, and review this file's "Known Issues" section.
 
-## 💡 Key Learnings from Iteration 1 (Posts Portion)
+## 💡 Key Learnings from Iteration 1
 
 1. **Store requires 4 methods**: `createSchemaService()`, `createCache()`, `instantiateRecord()`, `teardownRecord()`
 2. **Schema type matching is critical**: Must match API response exactly (e.g., `posts` not `post`)

@@ -2,6 +2,9 @@ import { useLegacyStore } from '@warp-drive/legacy';
 import { JSONAPICache } from '@warp-drive/json-api';
 import { BaseURLHandler, LoggingHandler } from 'ui/utils/request-manager';
 import { registerPostSchema } from 'ui/models/post';
+import { registerUserSchema } from 'ui/models/user';
+import { registerCategorySchema } from 'ui/models/category';
+import { registerTagSchema } from 'ui/models/tag';
 
 /**
  * Application Store Service (useLegacyStore Implementation)
@@ -59,6 +62,9 @@ export default class ApplicationStoreService extends StoreClass {
 
     // Register resource schemas after the store is fully initialized
     registerPostSchema(this);
+    registerUserSchema(this);
+    registerCategorySchema(this);
+    registerTagSchema(this);
   }
 }
 

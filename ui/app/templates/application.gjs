@@ -36,6 +36,9 @@ import { LinkTo } from '@ember/routing';
     <nav class="app-nav">
       <LinkTo @route="application">Home</LinkTo>
       <LinkTo @route="posts">Posts</LinkTo>
+      <LinkTo @route="users">Users</LinkTo>
+      <LinkTo @route="categories">Categories</LinkTo>
+      <LinkTo @route="tags">Tags</LinkTo>
     </nav>
 
     <main class="app-main">

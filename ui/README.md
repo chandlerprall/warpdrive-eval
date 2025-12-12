@@ -30,10 +30,10 @@ npm run lint
 
 ## Current Status
 
-**Iteration:** 1 🔄 Partial (Posts complete, Users/Categories/Tags pending)  
+**Iteration:** 1 ✅ Complete - Read-Only Lists  
 **WarpDrive Version:** 5.8.0  
-**Features Working:** Health check, Posts list with filtering  
-**Next:** Complete Iteration 1 (users, categories, tags lists) or move to Iteration 2
+**Features Working:** Health check, Posts, Users, Categories, Tags (all list routes)  
+**Next:** Iteration 2 - Detail views & relationships
 
 ---
 
