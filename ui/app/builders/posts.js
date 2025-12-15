@@ -70,3 +70,44 @@ export function queryAllPosts(options = {}) {
   return queryPublishedPosts({ ...options, status: null });
 }
 
+/**
+ * Find a single post by ID with relationships
+ *
+ * Builds a GET request to /posts/:id with include parameter to sideload
+ * related resources (author, category, tags) in a single request.
+ *
+ * Note: The API uses numeric IDs for lookups. In a production app, you might
+ * want to add slug-based lookup support to the API for SEO-friendly URLs.
+ *
+ * @param {string} id - Post ID
+ * @param {Object} options - Query options
+ * @param {string} [options.include='author,category,tags'] - Related resources to include
+ * @returns {Object} Request object for store.request()
+ *
+ * @example
+ * const { content } = await store.request(findPost('1'));
+ * console.log(content.data); // Post record
+ * console.log(content.included); // Array of related records (author, category, tags)
+ */
+export function findPost(id, options = {}) {
+  const { include = 'author,category,tags' } = options;
+
+  const params = new URLSearchParams();
+  
+  if (include) {
+    params.append('include', include);
+  }
+
+  const queryString = params.toString();
+  const url = `/posts/${id}${queryString ? `?${queryString}` : ''}`;
+
+  return {
+    url,
+    method: 'GET',
+    headers: new Headers({
+      'Accept': 'application/vnd.api+json',
+      'Content-Type': 'application/vnd.api+json'
+    })
+  };
+}
+

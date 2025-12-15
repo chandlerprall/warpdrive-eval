@@ -38,10 +38,17 @@ export function registerTagSchema(store) {
         kind: 'field',
         name: 'postCount',
         sourceKey: 'postCount'
-      }
+      },
 
-      // Relationships will be added in Iteration 2:
-      // - posts (has-many through join table)
+      // Relationships (Iteration 2)
+      
+      // has-many: posts with this tag (many-to-many)
+      {
+        kind: 'collection',
+        name: 'posts',
+        type: 'posts',
+        options: { async: false, inverse: 'tags' }
+      }
     ]
   });
 }

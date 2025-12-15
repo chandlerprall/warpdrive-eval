@@ -60,12 +60,19 @@ export function registerUserSchema(store) {
         kind: 'field',
         name: 'updatedAt',
         sourceKey: 'updatedAt'
-      }
+      },
 
-      // Relationships will be added in Iteration 2:
-      // - posts (has-many)
-      // - followers (has-many users)
-      // - following (has-many users)
+      // Relationships (Iteration 2)
+      
+      // has-many: posts authored by this user
+      {
+        kind: 'collection',
+        name: 'posts',
+        type: 'posts',
+        options: { async: false, inverse: 'author' }
+      }
+      
+      // Note: followers/following relationships deferred to later iteration
     ]
   });
 }

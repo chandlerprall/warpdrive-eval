@@ -7,7 +7,7 @@ import { queryUsers } from 'ui/builders/users';
  * 
  * Fetches and displays a list of all users from the API.
  */
-export default class UsersRoute extends Route {
+export default class UsersIndexRoute extends Route {
   @service store;
 
   async model() {

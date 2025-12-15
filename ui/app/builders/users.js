@@ -40,3 +40,41 @@ export function queryUsers(options = {}) {
   };
 }
 
+/**
+ * Find a single user by ID with relationships
+ *
+ * Builds a GET request to /users/:id with include parameter to sideload
+ * the user's posts in a single request.
+ *
+ * @param {string} id - User ID
+ * @param {Object} options - Query options
+ * @param {string} [options.include='posts'] - Related resources to include
+ * @returns {Object} Request object for store.request()
+ *
+ * @example
+ * const { content } = await store.request(findUser('1'));
+ * console.log(content.data); // User record
+ * console.log(content.included); // Array of related posts
+ */
+export function findUser(id, options = {}) {
+  const { include = 'posts' } = options;
+
+  const params = new URLSearchParams();
+  
+  if (include) {
+    params.append('include', include);
+  }
+
+  const queryString = params.toString();
+  const url = `/users/${id}${queryString ? `?${queryString}` : ''}`;
+
+  return {
+    url,
+    method: 'GET',
+    headers: new Headers({
+      'Accept': 'application/vnd.api+json',
+      'Content-Type': 'application/vnd.api+json'
+    })
+  };
+}
+

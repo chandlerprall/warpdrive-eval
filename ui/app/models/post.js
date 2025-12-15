@@ -91,12 +91,33 @@ export function registerPostSchema(store) {
         kind: 'field',
         name: 'commentCount',
         sourceKey: 'commentCount'
-      }
+      },
 
-      // Relationships will be added in Iteration 2:
-      // - author (belongs-to user)
-      // - category (belongs-to category)
-      // - tags (has-many tags)
+      // Relationships (Iteration 2)
+
+      // belongs-to: author is a single User
+      {
+        kind: 'resource',
+        name: 'author',
+        type: 'users',
+        options: { async: false, inverse: 'posts' }
+      },
+
+      // belongs-to: category is a single Category
+      {
+        kind: 'resource',
+        name: 'category',
+        type: 'categories',
+        options: { async: false, inverse: 'posts' }
+      },
+
+      // has-many: tags is a collection of Tags
+      {
+        kind: 'collection',
+        name: 'tags',
+        type: 'tags',
+        options: { async: false, inverse: 'posts' }
+      }
     ]
   });
 }

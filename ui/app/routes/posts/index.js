@@ -12,7 +12,7 @@ import { queryPublishedPosts } from 'ui/builders/posts';
  * - Uses custom builder pattern (recommended by WarpDrive)
  * - Returns raw response for learning/debugging
  */
-export default class PostsRoute extends Route {
+export default class PostsIndexRoute extends Route {
   @service store;
 
   async model() {

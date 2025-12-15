@@ -1,7 +1,7 @@
 # WarpDrive Evaluation - UI Cold Boot Guide
 
-**Last Updated:** December 11, 2024  
-**Current Status:** ✅ Iteration 1 Complete - Read-Only Lists (Posts, Users, Categories, Tags)
+**Last Updated:** December 15, 2024  
+**Current Status:** ✅ Iteration 2 Complete - Detail Views & Relationships
 
 ---
 
@@ -36,14 +36,16 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - **`ui/plan.md`**: Detailed roadmap with 8 iterations
   - Iteration 0: ✅ Scaffold & plumbing (COMPLETE)
   - Iteration 1: ✅ Read-only lists (Posts, Users, Categories, Tags) (COMPLETE)
-  - Iteration 2: Detail views & relationships
-  - Iteration 3-8: Mutations, social features, caching, TypeScript, polish
+  - Iteration 2: ✅ Detail views & relationships (COMPLETE)
+  - Iteration 3-8: Mutations, comments, social features, caching, TypeScript, polish
 
 ---
 
-## ✅ Current State (Iteration 1 Complete)
+## ✅ Current State (Iteration 2 Complete)
 
 ### What's Been Built
+
+**Iteration 2 additions are marked with 🆕**
 
 #### 1. **Configuration & Environment**
 - `config/environment.js`: API host/namespace configuration
@@ -84,14 +86,19 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - Ember 6.8.x with Embroider/Vite build pipeline
 - Note: Using `@warp-drive/legacy` for `useLegacyStore` factory (modern patterns only)
 
-#### 6. **Resource Schemas** ✅
+#### 6. **Resource Schemas** ✅ 🆕
 - **Post** (`app/models/post.js`) - title, slug, body, excerpt, status, timestamps, counts
+  - 🆕 **Relationships**: author (belongs-to user), category (belongs-to category), tags (has-many tags)
 - **User** (`app/models/user.js`) - username, email, displayName, bio, avatarUrl, timestamps
+  - 🆕 **Relationships**: posts (has-many posts)
 - **Category** (`app/models/category.js`) - name, slug, description, postCount
+  - 🆕 **Relationships**: posts (has-many posts)
 - **Tag** (`app/models/tag.js`) - name, slug, postCount
+  - 🆕 **Relationships**: posts (has-many posts)
 - All registered with store during initialization
 - All use legacy mode for Ember compatibility
 - **Key Learning**: Schema `type` must match API response exactly (`posts` not `post`)
+- 🆕 **Relationship syntax**: `kind: 'resource'` for belongs-to, `kind: 'collection'` for has-many
 
 #### 7. **Full Store Configuration** (`app/services/store.js`) ✅
 - Uses `useLegacyStore` factory from `@warp-drive/legacy` (v5.8.0)
@@ -101,13 +108,16 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - All 4 schemas registered on construction
 - 60% less code than manual implementation (~30 lines vs ~75 lines)
 
-#### 8. **Request Builders** ✅
+#### 8. **Request Builders** ✅ 🆕
 - **Posts** (`app/builders/posts.js`) - `queryPublishedPosts()` with filtering
+  - 🆕 `findPost(id)` - fetch single post with `include=author,category,tags`
 - **Users** (`app/builders/users.js`) - `queryUsers()` with pagination/sorting
+  - 🆕 `findUser(id)` - fetch single user with `include=posts`
 - **Categories** (`app/builders/categories.js`) - `queryCategories()` with sorting
 - **Tags** (`app/builders/tags.js`) - `queryTags()` with sorting
 - All follow WarpDrive builder pattern (return plain objects)
 - **Key Learning**: `headers` must be `new Headers({...})` not plain objects
+- 🆕 **Include parameter**: Use `?include=author,category,tags` to sideload relationships
 
 #### 9. **List Routes** ✅
 - **Posts** (`app/routes/posts.js`) - Fetches published posts with filtering
@@ -125,11 +135,28 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - All include collapsible debug panels with raw JSON:API responses
 - All have error and empty states
 
-#### 11. **Navigation & Routing** ✅
+#### 11. **Navigation & Routing** ✅ 🆕
 - Navigation with Home, Posts, Users, Categories, Tags links
+- 🆕 **Detail routes**: `/posts/:id` and `/users/:id` with nested routes
+- 🆕 **Relationship display**: Post detail shows author, category, and tags
+- 🆕 **Relationship navigation**: User detail shows their posts, clickable back to post detail
 - All routes registered in router
 - Active state styling
 - Responsive design
+
+#### 12. **Detail Templates** 🆕
+- **Post Detail** (`app/templates/posts/detail.gjs`)
+  - Full post content display
+  - Author card (belongs-to relationship) with link to user detail
+  - Category card (belongs-to relationship)
+  - Tags list (has-many relationship)
+  - Post statistics
+  - Breadcrumb navigation
+- **User Detail** (`app/templates/users/detail.gjs`)
+  - User profile information with avatar
+  - User's posts grid (has-many relationship) with links to post details
+  - Breadcrumb navigation
+- Both include collapsible debug panels showing raw JSON:API response
 
 ---
 
@@ -195,30 +222,31 @@ ui/
 
 ---
 
-## 🧭 Next Steps (Iteration 2)
+## 🧭 Next Steps (Iteration 3)
 
 See `plan.md` for full details. Summary:
 
-1. **Add Relationships to Schemas**
-   - Update Post schema: author (belongs-to user), category (belongs-to), tags (has-many)
-   - Update User schema: posts (has-many)
-   - Update Category schema: posts (has-many)
-   - Update Tag schema: posts (has-many)
+1. **Threaded Comments**
+   - Add Comment schema with self-referential relationships (parent/children)
+   - Show top-level comments on post detail
+   - Add "Load replies" functionality for nested comments
+   - Lazy-load replies per comment thread
 
-2. **Build Detail Routes**
-   - Post detail: `/posts/:id` with `include=author,category,tags`
-   - User detail: `/users/:id` with their posts
-   - Show related data in templates
+2. **Comment Display**
+   - Add comments section to post detail page
+   - Show comment author, content, timestamp
+   - Display nested replies with indentation
+   - Implement optimistic UI for expanding/collapsing threads
 
 3. **Learn & Document**
-   - How relationships work in schemas (`kind: 'resource'`, `kind: 'collection'`)
-   - How `include` parameter loads related data
-   - How to access included resources in templates
-   - How the cache handles relationships
+   - Self-referential relationships in WarpDrive
+   - Lazy loading patterns for performance
+   - Recursive template rendering for nested data
+   - Cache updates for dynamically loaded data
 
 ### Optional: Tests
-- Route rendering smoke tests
-- Contract tests for list fetch shapes
+- Route rendering tests for detail pages
+- Relationship loading tests
 - (Can be deferred to Iteration 8 if needed)
 
 ---
@@ -288,6 +316,25 @@ See `plan.md` for full details. Summary:
 - Pass builder result directly to `store.request()`: `store.request(myBuilder())`
 - Don't wrap builders in other function calls before passing to store
 
+### Relationship Access Pattern ⚠️
+- **All relationships require `.data`**: Both `kind: 'resource'` and `kind: 'collection'`
+- Relationships return `ResourceRelationship` objects, not direct resources
+- **Belongs-to**: `post.author.data` (single resource) ✅ WORKS
+- **Has-many**: `user.posts.data` (array of resources) ⛔ NOT YET IMPLEMENTED
+- Properties: `relationship.lid`, `relationship.name`, `relationship.data`, `relationship.links`, `relationship.meta`
+- This is NOT a bug - it's how WarpDrive exposes relationship metadata alongside data
+
+### Collection Fields (Has-Many) Not Yet Implemented ⛔
+- **CRITICAL LIMITATION**: WarpDrive v5.8.0 does not support accessing `kind: 'collection'` fields
+- Source: [collection-field.ts#L9](https://github.com/warp-drive-data/warp-drive/blob/4d2f2cbf3bbbfcd62d07f1b6fe778a2472dbb975/warp-drive-packages/core/src/reactive/-private/kind/collection-field.ts#L9)
+- Error thrown: `"Accessing collection fields is not yet implemented"`
+- **What works**: Defining collection relationships in schemas ✅
+- **What works**: Including collection data via API (`?include=tags`) ✅
+- **What works**: Data being cached ✅
+- **What DOESN'T work**: Accessing the relationship in templates/code ⛔
+- **Workaround**: Has-many sections commented out in templates until WarpDrive implements this
+- **Affected templates**: `posts/detail.gjs` (tags), `users/detail.gjs` (posts)
+
 ### Import Paths
 - Use full module specifiers: `ui/utils/request-manager` not `../utils/...`
 - Ember resolver handles these via `exports` in `package.json`
@@ -318,8 +365,9 @@ curl -X POST http://localhost:3000/reset   # Reset to seed data
 
 ---
 
-## 🤔 Questions Answered (Iteration 1)
+## 🤔 Questions Answered
 
+### Iteration 1
 - ✅ **How does schema registration work?** Call `store.schema.registerResource()` with schema definition
 - ✅ **When do we need `@warp-drive/json-api`?** For `JSONAPICache` to handle JSON:API formatted responses
 - ✅ **What's the difference between `store.request()` and `store.requestManager.request()`?** 
@@ -327,13 +375,22 @@ curl -X POST http://localhost:3000/reset   # Reset to seed data
   - `requestManager.request()` is lower-level, just executes HTTP
 - ✅ **How do builders work?** Return plain objects with `{ url, method, headers }`, pass directly to `store.request()`
 
+### Iteration 2 🆕
+- ✅ **How do relationships work in schemas?** Use `kind: 'resource'` for belongs-to, `kind: 'collection'` for has-many
+- ✅ **How do included resources work with relationships?** Use `?include=author,tags` in query params, WarpDrive automatically caches and links them
+- ✅ **How to access relationships in templates?** Must use `.data` property: `post.author.data.username` or `user.posts.data`
+- ✅ **Why the `.data` property?** Relationships return a `ResourceRelationship` object containing metadata AND data
+- ✅ **What happens when we fetch the same resource multiple times?** Cache deduplicates - included resources are cached just like primary resources
+
 ## 🤔 Questions for Future Exploration
 
-- How do we handle relationships in schemas?
+- How do self-referential relationships work (e.g., comment replies)?
 - When should we use `store.peekRecord()` vs `store.findRecord()`?
 - How does the cache invalidation strategy work?
-- How do included resources work with relationships?
-- What happens when we fetch the same resource multiple times?
+- How do we handle lazy-loading of relationships?
+- What's the performance impact of including many relationships?
+- How do we handle mutations (create/update/delete) with relationships?
+- ⛔ **When will collection fields (has-many) be accessible?** Currently not implemented in WarpDrive v5.8.0
 
 ---
 
@@ -398,22 +455,51 @@ And be able to synthesize the knowledge into a concise report that a team of hum
 - Remember to document findings, "aha!" moments, etc.
 - Also record any questions that arise during the iteration.
 
----
+## 💡 Key Learnings from Iteration 1 & 2
 
-**Ready to continue?** 
-- Complete Iteration 1: Add schemas/routes for users, categories, and tags
-- Or skip to Iteration 2: Detail views & relationships (we can add users/categories/tags as needed)
-- Review what we learned so far in ITERATION-1-SUMMARY.md
-
-**Having issues?** Check console logs (RequestManager logs everything), verify the API server is running, and review this file's "Known Issues" section.
-
-## 💡 Key Learnings from Iteration 1
-
+### Iteration 1 (Setup & Lists)
 1. **Store requires 4 methods**: `createSchemaService()`, `createCache()`, `instantiateRecord()`, `teardownRecord()`
 2. **Schema type matching is critical**: Must match API response exactly (e.g., `posts` not `post`)
 3. **Builder pattern is clean**: Return plain objects, not wrapped function calls
 4. **Headers must be Headers instances**: Use `new Headers({...})` not plain objects
 5. **Data flows smoothly**: Request → RequestManager → Cache → Reactive Records → Template
+
+### Iteration 2 (Relationships & Detail Views) 🆕
+1. **Relationship syntax is straightforward**: 
+   - `kind: 'resource'` for belongs-to (single related resource)
+   - `kind: 'collection'` for has-many (array of related resources)
+   - `type` property specifies the related resource type
+   - `options.inverse` sets up bidirectional relationships
+   
+2. **JSON:API include parameter is powerful**: 
+   - Use `?include=author,category,tags` to sideload relationships
+   - All included resources automatically populate the cache
+   - WarpDrive links relationships based on schema definitions
+   - No manual linking required - it "just works"
+
+3. **Accessing relationships in templates** ⚠️:
+   - **Belongs-to**: `@model.post.author.data` - note the `.data` property!
+   - **Has-many**: `@model.user.posts.data` - also requires `.data`!
+   - Relationships return a `ResourceRelationship` object with structure:
+     - `lid` - local identifier
+     - `name` - relationship name
+     - `data` - the actual related resource(s)
+     - `links` - relationship links
+     - `meta` - relationship metadata
+   - **Correct**: `post.author.data.username` or `post.category.data.name`
+   - **Incorrect**: `post.author.username` (missing `.data`)
+   - Relationships are reactive - updates propagate automatically
+
+4. **API considerations**:
+   - Our API only supports ID-based lookups, not slug-based
+   - For SEO-friendly URLs, you need API support for slug lookups
+   - Trade-off: numeric IDs (works now) vs slugs (better UX, more work)
+
+5. **Cache is smart**:
+   - Fetching a post with `include=author` caches both the post AND the author
+   - Later accessing the author directly doesn't require another API call
+   - Included resources are first-class cached entities
+   - Cache automatically maintains relationship linkage
 
 ## 🔀 Alternative Approaches Explored
 

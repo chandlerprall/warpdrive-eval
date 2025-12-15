@@ -42,10 +42,17 @@ export function registerCategorySchema(store) {
         kind: 'field',
         name: 'postCount',
         sourceKey: 'postCount'
-      }
+      },
 
-      // Relationships will be added in Iteration 2:
-      // - posts (has-many)
+      // Relationships (Iteration 2)
+      
+      // has-many: posts in this category
+      {
+        kind: 'collection',
+        name: 'posts',
+        type: 'posts',
+        options: { async: false, inverse: 'category' }
+      }
     ]
   });
 }

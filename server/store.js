@@ -27,6 +27,9 @@ class Store {
       // Deep clone to avoid mutations affecting the file
       this.data = JSON.parse(JSON.stringify(seedData));
       
+      // Compute derived counts
+      this.computeDerivedCounts();
+      
       console.log('📦 Loaded seed data:', {
         users: this.data.users?.length || 0,
         posts: this.data.posts?.length || 0,
@@ -46,6 +49,38 @@ class Store {
         follows: []
       };
     }
+  }
+
+  /**
+   * Compute derived counts (postCount for categories/tags)
+   */
+  computeDerivedCounts() {
+    const posts = this.data.posts || [];
+    
+    // Initialize counts to 0
+    (this.data.categories || []).forEach(cat => cat.postCount = 0);
+    (this.data.tags || []).forEach(tag => tag.postCount = 0);
+    
+    // Count posts for each category and tag
+    posts.forEach(post => {
+      // Count for category
+      if (post.categoryId) {
+        const category = (this.data.categories || []).find(c => c.id === post.categoryId);
+        if (category) {
+          category.postCount = (category.postCount || 0) + 1;
+        }
+      }
+      
+      // Count for tags
+      if (post.tagIds && Array.isArray(post.tagIds)) {
+        post.tagIds.forEach(tagId => {
+          const tag = (this.data.tags || []).find(t => t.id === tagId);
+          if (tag) {
+            tag.postCount = (tag.postCount || 0) + 1;
+          }
+        });
+      }
+    });
   }
 
   /**
