@@ -1,31 +1,6 @@
 import { pageTitle } from 'ember-page-title';
-import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
-import { on } from '@ember/modifier';
 import { LinkTo } from '@ember/routing';
-
-/**
- * Debug panel component
- */
-class DebugPanel extends Component {
-  @tracked isExpanded = false;
-
-  toggle = () => {
-    this.isExpanded = !this.isExpanded;
-  };
-
-  <template>
-    <div class="debug-panel">
-      <button type="button" class="debug-toggle" {{on "click" this.toggle}}>
-        {{if this.isExpanded "▼" "▶"}}
-        Debug: Raw Response
-      </button>
-      {{#if this.isExpanded}}
-        <pre class="debug-content">{{@json}}</pre>
-      {{/if}}
-    </div>
-  </template>
-}
+import DebugPanel from 'ui/components/debug-panel';
 
 <template>
   {{#if @model.user}}
