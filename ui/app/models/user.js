@@ -1,13 +1,13 @@
 /**
  * User Resource Schema
- * 
+ *
  * Defines the schema for users matching the JSON:API server structure.
  * For Iteration 1, we're keeping this simple with just attributes (no relationships).
  */
 
 /**
  * Register the user schema with the store.
- * 
+ *
  * @param {Store} store - The WarpDrive store instance
  */
 export function registerUserSchema(store) {
@@ -63,15 +63,15 @@ export function registerUserSchema(store) {
       },
 
       // Relationships (Iteration 2)
-      
+
       // has-many: posts authored by this user
       {
         kind: 'collection',
         name: 'posts',
         type: 'posts',
-        options: { async: false, inverse: 'author' }
+        options: { inverse: 'author' }
       }
-      
+
       // Note: followers/following relationships deferred to later iteration
     ]
   });

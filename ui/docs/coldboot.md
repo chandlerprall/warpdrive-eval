@@ -102,13 +102,42 @@ This project is an **exploratory learning journey** to understand and evaluate *
 
 #### 7. **Full Store Configuration** (`app/services/store.js`) ✅
 - Uses `useLegacyStore` factory from `@warp-drive/legacy` (v5.8.0)
-- All legacy features disabled (`linksMode: false`, etc.) for pure modern patterns
+- `linksMode: false` - WarpDrive's linksMode isn't yet fully implemented
 - Automatically provides: SchemaService, JSONAPICache, RequestManager, cache policy
-- Custom handlers injected via `handlers` option
+- Custom handlers chain: BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch
 - All 4 schemas registered on construction
 - 60% less code than manual implementation (~30 lines vs ~75 lines)
 
-#### 8. **Request Builders** ✅ 🆕
+#### 7.1. **Custom Request Handlers** 🆕
+**Purpose:** Work around WarpDrive's incomplete async relationship implementation
+
+**RelationshipLinksHandler** (`app/handlers/relationship-links.js`):
+- Injects JSON:API `links` into relationship objects
+- Detects JSON:API responses by shape (not content-type header)
+- Adds `links.related` URLs for each relationship based on type + id
+- Enables proper JSON:API relationship structure
+
+**EagerRelationshipLoader** (`app/handlers/eager-relationship-loader.js`):
+- Pre-fetches missing relationships before template access
+- Extracts all relationship identifiers from response
+- Checks store cache to avoid duplicate fetches
+- Fetches missing resources in parallel via direct fetch
+- Adds fetched resources to response's `included` array
+- Result: All relationship data available immediately (no loading states)
+
+**Handler Flow:**
+```
+Request:  BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch
+Response: Fetch → EagerLoader → RelationshipLinks → Logging → BaseURL
+```
+
+1. Fetch returns raw response
+2. EagerLoader extracts relationships, pre-fetches missing ones, adds to `included`
+3. RelationshipLinks injects `links` into all relationships
+4. Logging logs the enhanced response
+5. Cache handler (automatic) stores everything
+
+#### 8. **Request Builders** ✅
 - **Posts** (`app/builders/posts.js`) - `queryPublishedPosts()` with filtering
   - 🆕 `findPost(id)` - fetch single post with `include=author,category,tags`
 - **Users** (`app/builders/users.js`) - `queryUsers()` with pagination/sorting
@@ -135,7 +164,7 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - All include collapsible debug panels with raw JSON:API responses
 - All have error and empty states
 
-#### 11. **Navigation & Routing** ✅ 🆕
+#### 11. **Navigation & Routing** ✅
 - Navigation with Home, Posts, Users, Categories, Tags links
 - 🆕 **Detail routes**: `/posts/:id` and `/users/:id` with nested routes
 - 🆕 **Relationship display**: Post detail shows author, category, and tags
@@ -144,7 +173,7 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - Active state styling
 - Responsive design
 
-#### 12. **Detail Templates** 🆕
+#### 12. **Detail Templates** ✅
 - **Post Detail** (`app/templates/posts/detail.gjs`)
   - Full post content display
   - Author card (belongs-to relationship) with link to user detail
@@ -332,8 +361,17 @@ See `plan.md` for full details. Summary:
 - **What works**: Including collection data via API (`?include=tags`) ✅
 - **What works**: Data being cached ✅
 - **What DOESN'T work**: Accessing the relationship in templates/code ⛔
-- **Workaround**: Has-many sections commented out in templates until WarpDrive implements this
-- **Affected templates**: `posts/detail.gjs` (tags), `users/detail.gjs` (posts)
+- **Workaround**: EagerRelationshipLoader pre-fetches has-many relationships and adds to `included`, but templates still can't access them via `.data`
+- **Affected templates**: `posts/detail.gjs` (tags), `users/detail.gjs` (posts) - has-many sections commented out
+
+### Async Relationships (`linksMode`) Not Yet Implemented ⛔  
+- **DISCOVERED LIMITATION**: WarpDrive's `linksMode` flag exists but isn't fully functional
+- Source: [validate-document-fields.ts#L85-L130](https://github.com/warp-drive-data/warp-drive/blob/4d2f2cbf3bbbfcd62d07f1b6fe778a2472dbb975/warp-drive-packages/json-api/src/-private/validate-document-fields.ts#L85-L130)
+- Setting `async: true` with relationship links doesn't trigger automatic fetching
+- **Workaround**: Implemented custom handlers that eagerly pre-fetch all relationships
+  - RelationshipLinksHandler: Injects `links` into relationships
+  - EagerRelationshipLoader: Pre-fetches missing relationships, adds to `included`
+- This approach gives us immediate data availability without loading states
 
 ### Import Paths
 - Use full module specifiers: `ui/utils/request-manager` not `../utils/...`
@@ -464,7 +502,7 @@ And be able to synthesize the knowledge into a concise report that a team of hum
 4. **Headers must be Headers instances**: Use `new Headers({...})` not plain objects
 5. **Data flows smoothly**: Request → RequestManager → Cache → Reactive Records → Template
 
-### Iteration 2 (Relationships & Detail Views) 🆕
+### Iteration 2 (Relationships & Detail Views) ✅
 1. **Relationship syntax is straightforward**: 
    - `kind: 'resource'` for belongs-to (single related resource)
    - `kind: 'collection'` for has-many (array of related resources)
@@ -500,6 +538,20 @@ And be able to synthesize the knowledge into a concise report that a team of hum
    - Later accessing the author directly doesn't require another API call
    - Included resources are first-class cached entities
    - Cache automatically maintains relationship linkage
+   - EagerRelationshipLoader checks cache before fetching to avoid duplicates
+
+6. **WarpDrive's async relationship implementation is incomplete**:
+   - `linksMode` flag exists but `validateBelongsToLinksMode` throws "not yet implemented" errors
+   - Setting `async: true` with links doesn't automatically fetch on access
+   - Workaround: Use RequestManager handlers to eagerly pre-fetch relationships
+   - This gives us immediate data availability without loading states
+
+7. **RequestManager handlers are powerful**:
+   - Can transform request/response data transparently
+   - Can make additional requests (pre-fetching, batching)
+   - Can inject missing data (like JSON:API links)
+   - Chain of responsibility pattern with reversed response flow
+   - Perfect for normalizing non-compliant APIs or working around limitations
 
 ## 🔀 Alternative Approaches Explored
 

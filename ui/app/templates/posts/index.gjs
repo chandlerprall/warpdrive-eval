@@ -57,6 +57,32 @@ class DebugPanel extends Component {
             {{#if post.excerpt}}
               <p class="excerpt">{{post.excerpt}}</p>
             {{/if}}
+
+            {{! ASYNC RELATIONSHIPS EXPLORATION }}
+            <div class="post-relationships">
+              {{#if post.author.data}}
+                <p class="relationship-info">
+                  ✍️ Author: <strong>{{post.author.data.displayName}}</strong> (@{{post.author.data.username}})
+                </p>
+              {{/if}}
+
+              {{#if post.category.data}}
+                <p class="relationship-info">
+                  📁 Category: <strong>{{post.category.data.name}}</strong>
+                </p>
+              {{/if}}
+
+              {{! Note: Tags are a collection (has-many), may not be accessible yet per WarpDrive limitations }}
+              {{!-- {{#if post.tags.data}}
+                <p class="relationship-info">
+                  🏷️ Tags:
+                  {{#each post.tags.data as |tag|}}
+                    <span class="tag-badge">{{tag.name}}</span>
+                  {{/each}}
+                </p>
+              {{/if}} --}}
+            </div>
+
             <div class="post-meta">
               <span class="badge">{{post.status}}</span>
               {{#if post.publishedAt}}

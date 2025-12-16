@@ -1,6 +1,8 @@
 import { useLegacyStore } from '@warp-drive/legacy';
 import { JSONAPICache } from '@warp-drive/json-api';
 import { BaseURLHandler, LoggingHandler } from 'ui/utils/request-manager';
+import { RelationshipLinksHandler } from 'ui/handlers/relationship-links';
+import { createEagerRelationshipLoader } from 'ui/handlers/eager-relationship-loader';
 import { registerPostSchema } from 'ui/models/post';
 import { registerUserSchema } from 'ui/models/user';
 import { registerCategorySchema } from 'ui/models/category';
@@ -41,21 +43,29 @@ const StoreClass = useLegacyStore({
   // Cache implementation for storing JSON:API data
   cache: JSONAPICache,
 
-  // Legacy features - all disabled for modern patterns
-  linksMode: false,           // Don't use links-based relationships
-  legacyRequests: false,      // Don't use legacy request methods
+  linksMode: false,           // linksMode isn't yet supported - https://github.com/warp-drive-data/warp-drive/blob/4d2f2cbf3bbbfcd62d07f1b6fe778a2472dbb975/warp-drive-packages/json-api/src/-private/validate-document-fields.ts#L85-L130
+  // Legacy features configuration
+  legacyRequests: false,      // Don't use legacy request methods (findRecord, etc.)
   modelFragments: false,      // Don't use model fragments
 
-  // Custom request handlers (BaseURL, Logging)
-  // Fetch is automatically added at the end
-  handlers: [BaseURLHandler, LoggingHandler],
+  // Custom request handlers
+  // Note: EagerRelationshipLoader is added in constructor (needs store reference for cache checking)
+  // Order: BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch (auto-added)
+  // Response flow (reversed): Fetch → EagerLoader → RelationshipLinks → Logging → BaseURL
+  //
+  // Flow:
+  // 1. Fetch gets the response
+  // 2. EagerLoader extracts relationships, fetches missing ones, adds to included
+  // 3. RelationshipLinks injects links into all relationships
+  // 4. Logging logs the final enhanced response
+  handlers: [BaseURLHandler, LoggingHandler, RelationshipLinksHandler],
 
   // Schemas can be registered here or after instantiation
   // We'll register after for now to keep pattern from Iteration 1
   schemas: [],
 });
 
-// Extend the generated class to add schema registration in constructor
+// Extend the generated class to add schema registration and eager loader handler
 export default class ApplicationStoreService extends StoreClass {
   constructor(...args) {
     super(...args);
@@ -65,6 +75,16 @@ export default class ApplicationStoreService extends StoreClass {
     registerUserSchema(this);
     registerCategorySchema(this);
     registerTagSchema(this);
+
+    // Add EagerRelationshipLoader handler with store reference for cache checking
+    // This must be done after super() so we have access to 'this' (the store)
+    const eagerLoader = createEagerRelationshipLoader(this);
+
+    // Insert before Fetch handler (which is automatically added at the end)
+    // The handlers array in requestManager._handlers is: [BaseURL, Logging, RelationshipLinks, Fetch]
+    // We want: [BaseURL, Logging, RelationshipLinks, EagerLoader, Fetch]
+    const handlers = this.requestManager._handlers;
+    handlers.splice(handlers.length - 1, 0, eagerLoader);
   }
 }
 

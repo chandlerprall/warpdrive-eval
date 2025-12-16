@@ -5,30 +5,30 @@ import { findPost } from 'ui/builders/posts';
 /**
  * Post Detail Route
  *
- * Fetches a single post by ID with its relationships (author, category, tags).
+ * ASYNC RELATIONSHIP EXPLORATION:
+ * - Only includes author in the initial request
+ * - Category and tags are marked as async: true in the schema
+ * - When accessed in the template, WarpDrive should load them on-demand
  *
- * Features:
- * - Includes relationships using JSON:API include parameter
- * - Demonstrates how WarpDrive handles sideloaded relationships
- *
- * Note: Currently uses numeric IDs. In Iteration 3+, we could enhance this to support
- * slug-based URLs by either: (a) adding slug lookup to the API, or (b) loading the
- * post list and finding by slug client-side.
+ * This tests WarpDrive's async relationship loading behavior:
+ * - Does it automatically fetch when accessed?
+ * - How does it handle the loading state?
+ * - What network requests are made?
  */
 export default class PostsDetailRoute extends Route {
   @service store;
 
   async model(params) {
     try {
-      // Use our builder to create the request with includes
-      const request = findPost(params.id);
+      // ONLY include author - let category and tags load through relationships
+      const request = findPost(params.id, { include: 'author' });
 
       // Execute the request through the store
       // This will:
-      // 1. Fetch GET /posts/:id?include=author,category,tags
-      // 2. Parse the JSON:API response with main data + included
-      // 3. Update the cache with all records (post, author, category, tags)
-      // 4. Link relationships automatically based on schema definitions
+      // 1. Fetch GET /posts/:id?include=author
+      // 2. Parse the JSON:API response with main data + included author
+      // 3. Update the cache with post and author records
+      // 4. Category and tags will have links but no data yet
       const response = await this.store.request(request);
 
       // The post data will have reactive relationship accessors

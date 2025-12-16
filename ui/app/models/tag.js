@@ -47,7 +47,7 @@ export function registerTagSchema(store) {
         kind: 'collection',
         name: 'posts',
         type: 'posts',
-        options: { async: false, inverse: 'tags' }
+        options: { inverse: 'tags' }
       }
     ]
   });

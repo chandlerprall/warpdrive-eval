@@ -73,7 +73,7 @@ class DebugPanel extends Component {
             See: https://github.com/warp-drive-data/warp-drive/blob/4d2f2cbf3bbbfcd62d07f1b6fe778a2472dbb975/warp-drive-packages/core/src/reactive/-private/kind/collection-field.ts#L9
             The relationship is defined in the schema and data is cached, but accessing it throws:
             "Accessing collection fields is not yet implemented"
-            
+
             This will be re-enabled when WarpDrive implements collection field access.
         }}
         {{!--

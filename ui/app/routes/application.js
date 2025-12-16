@@ -6,6 +6,7 @@ export default class ApplicationRoute extends Route {
   @service store;
 
   async model() {
+    window.store = this.store;
     const model = {
       apiHost,
       apiNamespace,

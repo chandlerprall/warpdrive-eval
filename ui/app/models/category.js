@@ -1,13 +1,13 @@
 /**
  * Category Resource Schema
- * 
+ *
  * Defines the schema for categories matching the JSON:API server structure.
  * For Iteration 1, we're keeping this simple with just attributes (no relationships).
  */
 
 /**
  * Register the category schema with the store.
- * 
+ *
  * @param {Store} store - The WarpDrive store instance
  */
 export function registerCategorySchema(store) {
@@ -45,13 +45,13 @@ export function registerCategorySchema(store) {
       },
 
       // Relationships (Iteration 2)
-      
+
       // has-many: posts in this category
       {
         kind: 'collection',
         name: 'posts',
         type: 'posts',
-        options: { async: false, inverse: 'category' }
+        options: { inverse: 'category' }
       }
     ]
   });

@@ -94,29 +94,25 @@ export function registerPostSchema(store) {
       },
 
       // Relationships (Iteration 2)
-
-      // belongs-to: author is a single User
       {
         kind: 'resource',
         name: 'author',
         type: 'users',
-        options: { async: false, inverse: 'posts' }
+        options: { inverse: 'posts' }
       },
 
-      // belongs-to: category is a single Category
       {
         kind: 'resource',
         name: 'category',
         type: 'categories',
-        options: { async: false, inverse: 'posts' }
+        options: { inverse: 'posts' }
       },
 
-      // has-many: tags is a collection of Tags
       {
         kind: 'collection',
         name: 'tags',
         type: 'tags',
-        options: { async: false, inverse: 'posts' }
+        options: { inverse: 'posts' }
       }
     ]
   });

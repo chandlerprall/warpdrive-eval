@@ -240,6 +240,35 @@ code {
   line-height: 1.6;
 }
 
+.post-relationships {
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(17, 24, 39, 0.5);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.relationship-info {
+  margin: 6px 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.relationship-info strong {
+  color: var(--text);
+}
+
+.tag-badge {
+  display: inline-block;
+  background: rgba(34, 211, 238, 0.15);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 2px 4px;
+}
+
 .post-meta {
   display: flex;
   gap: 12px;
