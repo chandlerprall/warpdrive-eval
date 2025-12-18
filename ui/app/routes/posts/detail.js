@@ -5,30 +5,33 @@ import { findPost } from 'ui/builders/posts';
 /**
  * Post Detail Route
  *
- * ASYNC RELATIONSHIP EXPLORATION:
- * - Only includes author in the initial request
- * - Category and tags are marked as async: true in the schema
- * - When accessed in the template, WarpDrive should load them on-demand
+ * ON-DEMAND RELATIONSHIP LOADING:
+ * - Fetches only the post record initially (no includes)
+ * - Relationships (author, category) are loaded on-demand by ResolveRelationship component
+ * - Each relationship is fetched when the component renders in the template
+ * - Component handles loading states and caching automatically
  *
- * This tests WarpDrive's async relationship loading behavior:
- * - Does it automatically fetch when accessed?
- * - How does it handle the loading state?
- * - What network requests are made?
+ * This pattern provides:
+ * - Cleaner route code (no manual .fetch() calls)
+ * - Better UX (loading indicators per relationship)
+ * - Reactive updates (component re-fetches if relationship changes)
+ * - DX-friendly API (wrap relationship in component, get data back)
  */
 export default class PostsDetailRoute extends Route {
   @service store;
 
   async model(params) {
     try {
-      // ONLY include author - let category and tags load through relationships
-      const request = findPost(params.id, { include: 'author' });
+      // Fetch just the post - ResolveRelationship component will handle relationships
+      const request = findPost(params.id, { include: null });
 
       // Execute the request through the store
       // This will:
-      // 1. Fetch GET /posts/:id?include=author
-      // 2. Parse the JSON:API response with main data + included author
-      // 3. Update the cache with post and author records
-      // 4. Category and tags will have links but no data yet
+      // 1. Fetch GET /posts/:id (no includes)
+      // 2. Parse the JSON:API response
+      // 3. Update the cache with post record
+      // 4. Relationships will have links but no data yet
+      // 5. ResolveRelationship component will fetch relationships on-demand
       const response = await this.store.request(request);
 
       // The post data will have reactive relationship accessors

@@ -1,13 +1,13 @@
 /**
  * Tag Resource Schema
- * 
+ *
  * Defines the schema for tags matching the JSON:API server structure.
  * For Iteration 1, we're keeping this simple with just attributes (no relationships).
  */
 
 /**
  * Register the tag schema with the store.
- * 
+ *
  * @param {Store} store - The WarpDrive store instance
  */
 export function registerTagSchema(store) {
@@ -20,9 +20,6 @@ export function registerTagSchema(store) {
       kind: '@id',
       name: 'id'
     },
-
-    // Enable legacy mode (recommended for Ember apps)
-    legacy: true,
 
     // Field definitions
     fields: [
@@ -41,7 +38,7 @@ export function registerTagSchema(store) {
       },
 
       // Relationships (Iteration 2)
-      
+
       // has-many: posts with this tag (many-to-many)
       {
         kind: 'collection',

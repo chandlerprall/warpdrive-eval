@@ -29,9 +29,6 @@ export function registerPostSchema(store) {
       name: 'id'
     },
 
-    // Enable legacy mode (recommended for Ember apps)
-    legacy: true,
-
     // Field definitions
     fields: [
       // Core content fields

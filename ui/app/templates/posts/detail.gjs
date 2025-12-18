@@ -1,6 +1,7 @@
 import { pageTitle } from 'ember-page-title';
 import { LinkTo } from '@ember/routing';
 import DebugPanel from 'ui/components/debug-panel';
+import ResolveRelationship from 'ui/components/resolve-relationship';
 
 <template>
   {{#if @model.post}}
@@ -39,35 +40,35 @@ import DebugPanel from 'ui/components/debug-panel';
         {{/if}}
 
         {{! Author Info (belongs-to relationship) }}
-        {{#if @model.post.author.data}}
-          <section class="post-section">
-            <h3>Author</h3>
+        <section class="post-section">
+          <h3>Author</h3>
+          <ResolveRelationship @resource={{@model.post.author}} as |author|>
             <div class="author-card">
               <h4>
-                <LinkTo @route="users.detail" @model={{@model.post.author.data.id}}>
-                  {{@model.post.author.data.displayName}}
+                <LinkTo @route="users.detail" @model={{author.id}}>
+                  {{author.displayName}}
                 </LinkTo>
               </h4>
-              <p class="muted">@{{@model.post.author.data.username}}</p>
-              {{#if @model.post.author.data.bio}}
-                <p>{{@model.post.author.data.bio}}</p>
+              <p class="muted">@{{author.username}}</p>
+              {{#if author.bio}}
+                <p>{{author.bio}}</p>
               {{/if}}
             </div>
-          </section>
-        {{/if}}
+          </ResolveRelationship>
+        </section>
 
         {{! Category Info (belongs-to relationship) }}
-        {{#if @model.post.category.data}}
-          <section class="post-section">
-            <h3>Category</h3>
+        <section class="post-section">
+          <h3>Category</h3>
+          <ResolveRelationship @resource={{@model.post.category}} as |category|>
             <div class="category-card">
-              <h4>{{@model.post.category.data.name}}</h4>
-              {{#if @model.post.category.data.description}}
-                <p>{{@model.post.category.data.description}}</p>
+              <h4>{{category.name}}</h4>
+              {{#if category.description}}
+                <p>{{category.description}}</p>
               {{/if}}
             </div>
-          </section>
-        {{/if}}
+          </ResolveRelationship>
+        </section>
 
         {{! Tags (has-many relationship)
             COMMENTED OUT: WarpDrive doesn't yet support accessing collection fields

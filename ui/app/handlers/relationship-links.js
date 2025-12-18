@@ -182,10 +182,10 @@ export const RelationshipLinksHandler = {
 
     // Log what we did (for learning)
     if (enhancedContent !== response.content) {
-      console.log('[RelationshipLinksHandler] Injected relationship links into response', {
+      console.log('[RelationshipLinksHandler] Injected relationship links into response', structuredClone({
         url: context.request.url,
         enhancedContent
-      });
+      }));
     }
 
     // Return response with enhanced content

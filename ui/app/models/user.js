@@ -21,9 +21,6 @@ export function registerUserSchema(store) {
       name: 'id'
     },
 
-    // Enable legacy mode (recommended for Ember apps)
-    legacy: true,
-
     // Field definitions
     fields: [
       // Core user fields

@@ -109,21 +109,20 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - 60% less code than manual implementation (~30 lines vs ~75 lines)
 
 #### 7.1. **Custom Request Handlers** 🆕
-**Purpose:** Work around WarpDrive's incomplete async relationship implementation
+**Purpose:** Enable JSON:API-compliant relationship structure
 
 **RelationshipLinksHandler** (`app/handlers/relationship-links.js`):
 - Injects JSON:API `links` into relationship objects
 - Detects JSON:API responses by shape (not content-type header)
 - Adds `links.related` URLs for each relationship based on type + id
 - Enables proper JSON:API relationship structure
+- Required for `relationship.fetch()` to work (needs `links.related` URL)
 
 **EagerRelationshipLoader** (`app/handlers/eager-relationship-loader.js`):
+- ~~Currently in codebase but not actively used~~ 
 - Pre-fetches missing relationships before template access
-- Extracts all relationship identifiers from response
-- Checks store cache to avoid duplicate fetches
-- Fetches missing resources in parallel via direct fetch
-- Adds fetched resources to response's `included` array
-- Result: All relationship data available immediately (no loading states)
+- Was explored as an approach but moved to component-based on-demand loading
+- May be useful for specific routes that need eager loading
 
 **Handler Flow:**
 ```
@@ -131,11 +130,7 @@ Request:  BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch
 Response: Fetch → EagerLoader → RelationshipLinks → Logging → BaseURL
 ```
 
-1. Fetch returns raw response
-2. EagerLoader extracts relationships, pre-fetches missing ones, adds to `included`
-3. RelationshipLinks injects `links` into all relationships
-4. Logging logs the enhanced response
-5. Cache handler (automatic) stores everything
+**Key Handler**: RelationshipLinksHandler is critical for on-demand relationship loading. Without it, ResourceRelationship objects won't have the `links.related` URL needed for `.fetch()` to work.
 
 #### 8. **Request Builders** ✅
 - **Posts** (`app/builders/posts.js`) - `queryPublishedPosts()` with filtering
@@ -176,16 +171,37 @@ Response: Fetch → EagerLoader → RelationshipLinks → Logging → BaseURL
 #### 12. **Detail Templates** ✅
 - **Post Detail** (`app/templates/posts/detail.gjs`)
   - Full post content display
-  - Author card (belongs-to relationship) with link to user detail
-  - Category card (belongs-to relationship)
-  - Tags list (has-many relationship)
+  - 🆕 Author card (belongs-to relationship) using `ResolveRelationship` component
+  - 🆕 Category card (belongs-to relationship) using `ResolveRelationship` component
+  - Tags list (has-many relationship) - commented out due to WarpDrive limitation
   - Post statistics
   - Breadcrumb navigation
 - **User Detail** (`app/templates/users/detail.gjs`)
   - User profile information with avatar
-  - User's posts grid (has-many relationship) with links to post details
+  - User's posts grid (has-many relationship) - commented out due to WarpDrive limitation
   - Breadcrumb navigation
 - Both include collapsible debug panels showing raw JSON:API response
+
+#### 13. **ResolveRelationship Component** ✅ 🆕
+- **Component** (`app/components/resolve-relationship.gjs`)
+  - Accepts a `ResourceRelationship` object (e.g., `post.author`)
+  - Automatically fetches relationship data on-demand if not cached
+  - Yields the resolved `ReactiveResource` directly (no `.data` needed in block)
+  - Shows loading state during fetch
+  - Handles errors gracefully
+  - Skips fetch if data already loaded
+- **Usage Pattern**:
+  ```gjs
+  <ResolveRelationship @resource={{@model.post.author}} as |author|>
+    <h4>{{author.displayName}}</h4>
+  </ResolveRelationship>
+  ```
+- **Benefits**:
+  - Clean DX: No manual `.fetch()` calls in routes
+  - Clean templates: Access properties directly on yielded resource
+  - Automatic loading states per relationship
+  - Works with cache (skips redundant fetches)
+  - Reusable across the app
 
 ---
 
@@ -234,17 +250,36 @@ ui/
 │   ├── utils/
 │   │   └── request-manager.js    # Custom RequestManager with logging
 │   ├── builders/
-│   │   └── posts.js              # Request builders for post queries
+│   │   ├── posts.js              # Request builders for post queries
+│   │   ├── users.js              # Request builders for user queries
+│   │   ├── categories.js         # Request builders for category queries
+│   │   └── tags.js               # Request builders for tag queries
+│   ├── components/
+│   │   ├── debug-panel.gjs       # Collapsible JSON debug panel
+│   │   └── resolve-relationship.gjs  # On-demand relationship fetcher
 │   ├── models/
-│   │   └── post.js               # Post ResourceSchema
+│   │   ├── post.js               # Post ResourceSchema
+│   │   ├── user.js               # User ResourceSchema
+│   │   ├── category.js           # Category ResourceSchema
+│   │   └── tag.js                # Tag ResourceSchema
 │   ├── services/
 │   │   └── store.js              # WarpDrive Store with schema/cache
 │   ├── routes/
 │   │   ├── application.js        # Health check logic
-│   │   └── posts.js              # Posts list route
+│   │   ├── posts/
+│   │   │   ├── index.js          # Posts list route
+│   │   │   └── detail.js         # Post detail route
+│   │   └── users/
+│   │       ├── index.js          # Users list route
+│   │       └── detail.js         # User detail route
 │   ├── templates/
 │   │   ├── application.gjs       # Shell with status card & nav
-│   │   └── posts.gjs             # Posts list with debug panel
+│   │   ├── posts/
+│   │   │   ├── index.gjs         # Posts list with debug panel
+│   │   │   └── detail.gjs        # Post detail with relationships
+│   │   └── users/
+│   │       ├── index.gjs         # Users list
+│   │       └── detail.gjs        # User detail
 │   └── styles/
 │       └── app.css               # Styling for all pages
 ```
@@ -289,8 +324,10 @@ See `plan.md` for full details. Summary:
 
 ### 2. Request Manager Architecture
 - All HTTP goes through `store.requestManager`
-- Middleware chain: BaseURL → Logging → Fetch → CacheHandler
+- Handler chain: BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch
+- RelationshipLinksHandler injects JSON:API `links` into relationships (required for `.fetch()`)
 - Absolute URLs bypass the BaseURLHandler (e.g., health check)
+- Cache handler is automatic (part of Store, not in explicit chain)
 
 ### 3. Builder Pattern for Requests
 - All requests use plain builder functions (not wrapper functions)
@@ -309,7 +346,14 @@ See `plan.md` for full details. Summary:
 - `API_HOST` and `API_NAMESPACE` can be overridden
 - Helpers in `app/config/api.js` provide single source of truth
 
-### 6. Learning-First Development
+### 6. On-Demand Relationship Loading Pattern
+- Use `ResolveRelationship` component for belongs-to relationships
+- Routes fetch primary resources only (no includes needed)
+- Component handles `.fetch()` calls automatically
+- Benefits: clean route code, loading states, cache-aware, reusable
+- Pattern: `<ResolveRelationship @resource={{relationship}} as |data|>...{{data.field}}</ResolveRelationship>`
+
+### 7. Learning-First Development
 - Console logging intentionally verbose for learning
 - Each iteration builds on previous (no rewrites)
 - Document surprises and "aha!" moments as we go
@@ -346,11 +390,17 @@ See `plan.md` for full details. Summary:
 - Don't wrap builders in other function calls before passing to store
 
 ### Relationship Access Pattern ⚠️
-- **All relationships require `.data`**: Both `kind: 'resource'` and `kind: 'collection'`
-- Relationships return `ResourceRelationship` objects, not direct resources
-- **Belongs-to**: `post.author.data` (single resource) ✅ WORKS
+- **ResourceRelationship objects**: Relationships return a wrapper object, not direct resources
+- **Properties available**: `lid`, `name`, `data`, `links`, `meta`, `fetch()`
+- **Direct access pattern**: `post.author.data` (single resource) ✅ WORKS
+  - But requires data to be pre-fetched or synchronously available
+  - Not reactive if data isn't loaded yet
+- **Recommended pattern**: Use `ResolveRelationship` component ✅
+  - Handles `.fetch()` automatically
+  - Shows loading states
+  - Yields resolved resource directly (no `.data` in template)
+  - Example: `<ResolveRelationship @resource={{post.author}} as |author|>{{author.displayName}}</ResolveRelationship>`
 - **Has-many**: `user.posts.data` (array of resources) ⛔ NOT YET IMPLEMENTED
-- Properties: `relationship.lid`, `relationship.name`, `relationship.data`, `relationship.links`, `relationship.meta`
 - This is NOT a bug - it's how WarpDrive exposes relationship metadata alongside data
 
 ### Collection Fields (Has-Many) Not Yet Implemented ⛔
@@ -364,14 +414,21 @@ See `plan.md` for full details. Summary:
 - **Workaround**: EagerRelationshipLoader pre-fetches has-many relationships and adds to `included`, but templates still can't access them via `.data`
 - **Affected templates**: `posts/detail.gjs` (tags), `users/detail.gjs` (posts) - has-many sections commented out
 
-### Async Relationships (`linksMode`) Not Yet Implemented ⛔  
-- **DISCOVERED LIMITATION**: WarpDrive's `linksMode` flag exists but isn't fully functional
-- Source: [validate-document-fields.ts#L85-L130](https://github.com/warp-drive-data/warp-drive/blob/4d2f2cbf3bbbfcd62d07f1b6fe778a2472dbb975/warp-drive-packages/json-api/src/-private/validate-document-fields.ts#L85-L130)
-- Setting `async: true` with relationship links doesn't trigger automatic fetching
-- **Workaround**: Implemented custom handlers that eagerly pre-fetch all relationships
-  - RelationshipLinksHandler: Injects `links` into relationships
-  - EagerRelationshipLoader: Pre-fetches missing relationships, adds to `included`
-- This approach gives us immediate data availability without loading states
+### Async Relationships in Polaris Mode ⚠️
+- **LIMITATION**: WarpDrive's "Polaris" mode (non-legacy) doesn't support automatic relationship fetching
+- WarpDrive docs indicate this may be intentional - Polaris mode requires explicit control
+- Setting `async: true` with relationship links doesn't trigger automatic fetching on access
+- **EXPLORED APPROACHES**:
+  1. **EagerRelationshipLoader Handler** (Iteration 2) - Pre-fetches all relationships before template render
+     - Pros: Immediate data availability, no loading states
+     - Cons: Over-fetches data, can't show granular loading, not lazy
+  2. **ResolveRelationship Component** (Current) ✅ - On-demand component-based fetching
+     - Pros: Only fetches what's needed, loading states per relationship, works with cache
+     - Cons: Requires wrapping relationships in component
+- **Current Pattern**: `ResolveRelationship` component for DX-friendly on-demand loading
+  - Routes fetch primary resources only (no includes)
+  - Component calls `.fetch()` on `ResourceRelationship` when rendered
+  - Clean separation: routes = data fetching, components = relationship resolution
 
 ### Import Paths
 - Use full module specifiers: `ui/utils/request-manager` not `../utils/...`
@@ -416,18 +473,22 @@ curl -X POST http://localhost:3000/reset   # Reset to seed data
 ### Iteration 2 🆕
 - ✅ **How do relationships work in schemas?** Use `kind: 'resource'` for belongs-to, `kind: 'collection'` for has-many
 - ✅ **How do included resources work with relationships?** Use `?include=author,tags` in query params, WarpDrive automatically caches and links them
-- ✅ **How to access relationships in templates?** Must use `.data` property: `post.author.data.username` or `user.posts.data`
-- ✅ **Why the `.data` property?** Relationships return a `ResourceRelationship` object containing metadata AND data
+- ✅ **How to access relationships in templates?** Use `ResolveRelationship` component for clean, reactive access with loading states
+- ✅ **Why not access `.data` directly?** Not reactive when null, no loading state, requires pre-fetching
+- ✅ **What's a ResourceRelationship?** Wrapper object with `lid`, `name`, `data`, `links`, `meta`, and `fetch()` method
+- ✅ **How does on-demand fetching work?** Component calls `relationship.fetch()` automatically if data not cached
 - ✅ **What happens when we fetch the same resource multiple times?** Cache deduplicates - included resources are cached just like primary resources
+- ✅ **Does WarpDrive auto-fetch relationships?** Not in Polaris mode - requires explicit `.fetch()` or component pattern
 
 ## 🤔 Questions for Future Exploration
 
 - How do self-referential relationships work (e.g., comment replies)?
 - When should we use `store.peekRecord()` vs `store.findRecord()`?
 - How does the cache invalidation strategy work?
-- How do we handle lazy-loading of relationships?
-- What's the performance impact of including many relationships?
+- ~~How do we handle lazy-loading of relationships?~~ ✅ Answered: Use `ResolveRelationship` component
+- What's the performance impact of on-demand relationship loading vs eager loading?
 - How do we handle mutations (create/update/delete) with relationships?
+- Can `ResolveRelationship` work with collection fields when WarpDrive adds support?
 - ⛔ **When will collection fields (has-many) be accessible?** Currently not implemented in WarpDrive v5.8.0
 
 ---
@@ -478,10 +539,10 @@ curl -X POST http://localhost:3000/reset   # Reset to seed data
 By the end of this project, we should understand:
 1. ✅ How to set up WarpDrive in a modern Ember app
 2. ✅ How to configure a custom RequestManager
-3. 🔜 How to define schemas (ResourceSchema)
-4. 🔜 How to make requests and handle responses
-5. 🔜 How relationships work in WarpDrive
-6. 🔜 How the cache works and when it updates
+3. ✅ How to define schemas (ResourceSchema)
+4. ✅ How to make requests and handle responses
+5. ✅ How relationships work in WarpDrive (schemas, loading, access patterns)
+6. 🔄 How the cache works and when it updates (partially understood)
 7. 🔜 How to handle mutations (create/update/delete)
 8. 🔜 TypeScript integration patterns
 
@@ -516,17 +577,21 @@ And be able to synthesize the knowledge into a concise report that a team of hum
    - No manual linking required - it "just works"
 
 3. **Accessing relationships in templates** ⚠️:
-   - **Belongs-to**: `@model.post.author.data` - note the `.data` property!
-   - **Has-many**: `@model.user.posts.data` - also requires `.data`!
-   - Relationships return a `ResourceRelationship` object with structure:
+   - Relationships return a `ResourceRelationship` object with properties:
      - `lid` - local identifier
      - `name` - relationship name
-     - `data` - the actual related resource(s)
-     - `links` - relationship links
+     - `data` - the actual related resource(s) (if loaded)
+     - `links` - relationship links (JSON:API)
      - `meta` - relationship metadata
-   - **Correct**: `post.author.data.username` or `post.category.data.name`
-   - **Incorrect**: `post.author.username` (missing `.data`)
-   - Relationships are reactive - updates propagate automatically
+     - `fetch()` - method to load relationship data
+   - **Direct access**: `@model.post.author.data.username` - requires data pre-fetched
+   - **Problem with direct access**: Not reactive when data is null, no loading state
+   - **Recommended pattern**: Use `ResolveRelationship` component ✅
+     - Handles fetch automatically
+     - Shows loading state during fetch
+     - Cleaner syntax: `{{author.username}}` vs `{{@model.post.author.data.username}}`
+     - Works with cache (skips fetch if already loaded)
+   - **Has-many**: Collection fields not yet accessible (WarpDrive limitation)
 
 4. **API considerations**:
    - Our API only supports ID-based lookups, not slug-based
@@ -553,6 +618,16 @@ And be able to synthesize the knowledge into a concise report that a team of hum
    - Chain of responsibility pattern with reversed response flow
    - Perfect for normalizing non-compliant APIs or working around limitations
 
+8. **On-demand relationship loading via components**:
+   - WarpDrive Polaris mode doesn't auto-fetch relationships on access
+   - Component-based pattern provides clean DX and UX
+   - `ResolveRelationship` component wraps `relationship.fetch()` with loading/error states
+   - Routes can fetch just primary resources (no includes)
+   - Each relationship loads independently when rendered
+   - Cache-aware: skips fetch if data already loaded
+   - Cleaner templates: `{{author.username}}` instead of `{{@model.post.author.data.username}}`
+   - Separation of concerns: routes fetch primary data, components resolve relationships
+
 ## 🔀 Alternative Approaches Explored
 
 ### Store Configuration (see `STORE-APPROACHES.md`)
@@ -578,4 +653,30 @@ We explored **three approaches** for configuring the Store:
    - Current implementation in `store.js`
 
 **Why we chose useLegacyStore:** After learning the manual approach, we discovered `useRecommendedStore` isn't exported yet. `useLegacyStore` provides the same factory benefits while we wait for v6. By disabling all legacy features, we get pure modern WarpDrive patterns with less boilerplate. Perfect example of exploring multiple paths and finding the practical solution!
+
+### Relationship Loading Patterns
+We explored **three approaches** for loading relationship data:
+
+1. **Eager Loading via Include Parameter**
+   - Use `?include=author,category,tags` in initial request
+   - All relationships loaded with primary resource
+   - Pros: Simple, all data available immediately
+   - Cons: Over-fetches data, not lazy, larger initial payload
+   - Used in early Iteration 2
+
+2. **EagerRelationshipLoader Handler** (Custom RequestManager Handler)
+   - Analyzes response, auto-fetches all missing relationships
+   - Adds fetched data to `included` array before caching
+   - Pros: Automatic, no template changes needed
+   - Cons: Over-fetches, can't show granular loading, complex handler logic
+   - Explored but moved away from
+
+3. **ResolveRelationship Component** ✅ **Current Choice**
+   - Component wraps relationship, calls `.fetch()` on-demand
+   - Shows loading/error states per relationship
+   - Only fetches what's rendered
+   - Works with cache (skips if already loaded)
+   - Current implementation in `app/components/resolve-relationship.gjs`
+
+**Why we chose ResolveRelationship:** Clean separation of concerns (routes fetch primary data, components resolve relationships), better UX (loading indicators per relationship), no over-fetching, cache-aware, and most importantly - clean DX with simple component syntax. Routes become simpler, templates become more explicit about loading behavior.
 

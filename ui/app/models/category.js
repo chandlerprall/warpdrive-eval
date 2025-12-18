@@ -21,9 +21,6 @@ export function registerCategorySchema(store) {
       name: 'id'
     },
 
-    // Enable legacy mode (recommended for Ember apps)
-    legacy: true,
-
     // Field definitions
     fields: [
       {
