@@ -1,4 +1,5 @@
 import { pageTitle } from 'ember-page-title';
+import { LinkTo } from '@ember/routing';
 
 <template>
   {{pageTitle "Home"}}
@@ -15,18 +16,18 @@ import { pageTitle } from 'ember-page-title';
       <section class="info-card">
         <h3>🚀 Quick Links</h3>
         <ul>
-          <li><strong>Posts:</strong> Browse published blog posts</li>
-          <li><strong>Users:</strong> View all users with profiles</li>
-          <li><strong>Categories:</strong> Explore post categories</li>
-          <li><strong>Tags:</strong> See all available tags</li>
+          <li><LinkTo @route="posts"><strong>Posts:</strong></LinkTo> Browse published blog posts with detail views</li>
+          <li><LinkTo @route="users"><strong>Users:</strong></LinkTo> View all users with profiles and their posts</li>
+          <li><LinkTo @route="categories"><strong>Categories:</strong></LinkTo> Explore post categories</li>
+          <li><LinkTo @route="tags"><strong>Tags:</strong></LinkTo> See all available tags</li>
         </ul>
       </section>
 
       <section class="info-card">
         <h3>📚 Documentation</h3>
         <ul>
-          <li><a href="https://canary.warp-drive.io" target="_blank" rel="noopener">WarpDrive Official Docs</a></li>
-          <li><a href="https://github.com/warp-drive-data/warp-drive" target="_blank" rel="noopener">GitHub Repository</a></li>
+          <li><a href="https://canary.warp-drive.io" target="_blank" rel="noopener noreferrer">WarpDrive Official Docs</a></li>
+          <li><a href="https://github.com/warp-drive-data/warp-drive" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
           <li>Local docs in <code>/docs</code> folder</li>
         </ul>
       </section>
@@ -34,11 +35,12 @@ import { pageTitle } from 'ember-page-title';
       <section class="info-card">
         <h3>🎯 Current Iteration</h3>
         <p>
-          <strong>Iteration 1:</strong> ✅ Complete - Read-Only Lists
+          <strong>Iteration 2:</strong> ✅ Complete - Detail Views & Relationships
         </p>
         <p class="muted">
-          All four resource types (posts, users, categories, tags) have working list routes
-          with schemas, builders, and templates following WarpDrive patterns.
+          Posts and users now have detail pages with relationship support. Belongs-to relationships
+          (post author, category) work via the ResolveRelationship component. Has-many relationships
+          are defined but not yet accessible due to WarpDrive limitations.
         </p>
       </section>
     </div>
