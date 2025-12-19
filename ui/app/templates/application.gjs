@@ -1,5 +1,6 @@
 import { pageTitle } from 'ember-page-title';
 import { LinkTo } from '@ember/routing';
+import RelationshipDebugPanel from 'ui/components/relationship-debug-panel';
 
 <template>
   {{pageTitle "WarpDrive UI"}}
@@ -45,4 +46,7 @@ import { LinkTo } from '@ember/routing';
       {{outlet}}
     </main>
   </div>
+
+  {{! Relationship Debug Panel - Fixed at bottom of viewport }}
+  <RelationshipDebugPanel />
 </template>

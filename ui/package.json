@@ -89,6 +89,7 @@
   "dependencies": {
     "@warp-drive/core": "~5.8.0",
     "@warp-drive/json-api": "~5.8.0",
-    "@warp-drive/legacy": "~5.8.0"
+    "@warp-drive/legacy": "~5.8.0",
+    "ember-truth-helpers": "^5.0.0"
   }
 }

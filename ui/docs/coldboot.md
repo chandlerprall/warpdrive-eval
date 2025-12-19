@@ -488,6 +488,7 @@ curl -X POST http://localhost:3000/reset   # Reset to seed data
 
 - **coldboot.md** (this file) - Main guide, current status, setup, architecture
 - **plan.md** - 8-iteration roadmap with goals and success criteria
+- **n+1.md** - N+1 query detection system guide (automatic performance monitoring)
 - **ITERATION-1-SUMMARY.md** - Technical summary of what we built (posts)
 - **STORE-CONFIGURATION.md** - Deep dive: Store setup exploration + comparison
 

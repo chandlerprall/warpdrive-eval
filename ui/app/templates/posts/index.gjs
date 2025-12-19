@@ -36,13 +36,23 @@ import ResolveRelationship from 'ui/components/resolve-relationship';
 
             {{! Relationships loaded on-demand via ResolveRelationship component }}
             <div class="post-relationships">
-              <ResolveRelationship @resource={{post.author}} as |author|>
+              <ResolveRelationship 
+                @resource={{post.author}}
+                @parentType="post"
+                @parentId={{post.id}}
+                as |author|
+              >
                 <p class="relationship-info">
                   ✍️ Author: <strong>{{author.displayName}}</strong> (@{{author.username}})
                 </p>
               </ResolveRelationship>
 
-              <ResolveRelationship @resource={{post.category}} as |category|>
+              <ResolveRelationship 
+                @resource={{post.category}}
+                @parentType="post"
+                @parentId={{post.id}}
+                as |category|
+              >
                 <p class="relationship-info">
                   📁 Category: <strong>{{category.name}}</strong>
                 </p>

@@ -42,7 +42,12 @@ import ResolveRelationship from 'ui/components/resolve-relationship';
         {{! Author Info (belongs-to relationship) }}
         <section class="post-section">
           <h3>Author</h3>
-          <ResolveRelationship @resource={{@model.post.author}} as |author|>
+          <ResolveRelationship 
+            @resource={{@model.post.author}}
+            @parentType="post"
+            @parentId={{@model.post.id}}
+            as |author|
+          >
             <div class="author-card">
               <h4>
                 <LinkTo @route="users.detail" @model={{author.id}}>
@@ -60,7 +65,12 @@ import ResolveRelationship from 'ui/components/resolve-relationship';
         {{! Category Info (belongs-to relationship) }}
         <section class="post-section">
           <h3>Category</h3>
-          <ResolveRelationship @resource={{@model.post.category}} as |category|>
+          <ResolveRelationship 
+            @resource={{@model.post.category}}
+            @parentType="post"
+            @parentId={{@model.post.id}}
+            as |category|
+          >
             <div class="category-card">
               <h4>{{category.name}}</h4>
               {{#if category.description}}
