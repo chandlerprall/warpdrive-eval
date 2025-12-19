@@ -49,37 +49,39 @@ import DebugPanel from 'ui/components/debug-panel';
             The relationship is defined in the schema and data is cached, but accessing it throws:
             "Accessing collection fields is not yet implemented"
 
-            This will be re-enabled when WarpDrive implements collection field access.
+            When WarpDrive implements collection field access, this would use ResolveRelationship:
         }}
         {{!--
         <section class="user-section">
           <h3>Posts</h3>
-          {{#if @model.user.posts.data}}
-            <div class="posts-grid">
-              {{#each @model.user.posts.data as |post|}}
-                <article class="post-card">
-                  <h4>
-                    <LinkTo @route="posts.detail" @model={{post.id}}>
-                      {{post.title}}
-                    </LinkTo>
-                  </h4>
-                  {{#if post.excerpt}}
-                    <p class="excerpt">{{post.excerpt}}</p>
-                  {{/if}}
-                  <div class="post-meta">
-                    <span class="badge">{{post.status}}</span>
-                    <span class="muted">
-                      ❤️ {{post.likeCount}} | 💬 {{post.commentCount}}
-                    </span>
-                  </div>
-                </article>
-              {{else}}
-                <p class="muted">No posts yet</p>
-              {{/each}}
-            </div>
-          {{else}}
-            <p class="muted">No posts yet</p>
-          {{/if}}
+          <ResolveRelationship @resource={{@model.user.posts}} as |posts|>
+            {{#if posts}}
+              <div class="posts-grid">
+                {{#each posts as |post|}}
+                  <article class="post-card">
+                    <h4>
+                      <LinkTo @route="posts.detail" @model={{post.id}}>
+                        {{post.title}}
+                      </LinkTo>
+                    </h4>
+                    {{#if post.excerpt}}
+                      <p class="excerpt">{{post.excerpt}}</p>
+                    {{/if}}
+                    <div class="post-meta">
+                      <span class="badge">{{post.status}}</span>
+                      <span class="muted">
+                        ❤️ {{post.likeCount}} | 💬 {{post.commentCount}}
+                      </span>
+                    </div>
+                  </article>
+                {{else}}
+                  <p class="muted">No posts yet</p>
+                {{/each}}
+              </div>
+            {{else}}
+              <p class="muted">No posts yet</p>
+            {{/if}}
+          </ResolveRelationship>
         </section>
         --}}
       </div>

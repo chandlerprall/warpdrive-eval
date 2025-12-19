@@ -22,6 +22,7 @@ import { tracked } from '@glimmer/tracking';
 export default class ResolveRelationshipComponent extends Component {
   @tracked isLoading = true;
   @tracked error = null;
+  @tracked data = null;
 
   constructor(owner, args) {
     super(owner, args);
@@ -40,6 +41,7 @@ export default class ResolveRelationshipComponent extends Component {
     // If data is already loaded, skip fetch
     if (resource.data) {
       this.isLoading = false;
+      this.data = resource.data;
       return;
     }
 
@@ -51,7 +53,8 @@ export default class ResolveRelationshipComponent extends Component {
     }
 
     try {
-      await resource.fetch();
+      const response = await resource.fetch();
+      this.data = response.content.data;
       this.isLoading = false;
     } catch (err) {
       console.error('Failed to fetch relationship:', err);
@@ -69,7 +72,7 @@ export default class ResolveRelationshipComponent extends Component {
     {{else if this.isLoading}}
       <div class="loading">Loading...</div>
     {{else}}
-      {{yield @resource.data}}
+      {{yield this.data}}
     {{/if}}
   </template>
 }

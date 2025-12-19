@@ -2,7 +2,6 @@ import { useRecommendedStore } from '@warp-drive/core';
 import { JSONAPICache } from '@warp-drive/json-api';
 import { BaseURLHandler, LoggingHandler } from 'ui/utils/request-manager';
 import { RelationshipLinksHandler } from 'ui/handlers/relationship-links';
-// import { createEagerRelationshipLoader } from 'ui/handlers/eager-relationship-loader';
 import { registerPostSchema } from 'ui/models/post';
 import { registerUserSchema } from 'ui/models/user';
 import { registerCategorySchema } from 'ui/models/category';
@@ -44,15 +43,13 @@ const StoreClass = useRecommendedStore({
   cache: JSONAPICache,
 
   // Custom request handlers
-  // Note: EagerRelationshipLoader is added in constructor (needs store reference for cache checking)
-  // Order: BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch (auto-added)
-  // Response flow (reversed): Fetch → EagerLoader → RelationshipLinks → Logging → BaseURL
+  // Order: BaseURL → Logging → RelationshipLinks → Fetch (auto-added)
+  // Response flow (reversed): Fetch → RelationshipLinks → Logging → BaseURL
   //
   // Flow:
   // 1. Fetch gets the response
-  // 2. EagerLoader extracts relationships, fetches missing ones, adds to included
-  // 3. RelationshipLinks injects links into all relationships
-  // 4. Logging logs the final enhanced response
+  // 2. RelationshipLinks injects links into all relationships
+  // 3. Logging logs the enhanced response
   handlers: [BaseURLHandler, LoggingHandler, RelationshipLinksHandler],
 
   // Schemas can be registered here or after instantiation
@@ -60,7 +57,7 @@ const StoreClass = useRecommendedStore({
   schemas: [],
 });
 
-// Extend the generated class to add schema registration and eager loader handler
+// Extend the generated class to add schema registration
 export default class ApplicationStoreService extends StoreClass {
   constructor(...args) {
     super(...args);
@@ -70,16 +67,6 @@ export default class ApplicationStoreService extends StoreClass {
     registerUserSchema(this);
     registerCategorySchema(this);
     registerTagSchema(this);
-
-    // Add EagerRelationshipLoader handler with store reference for cache checking
-    // This must be done after super() so we have access to 'this' (the store)
-    // const eagerLoader = createEagerRelationshipLoader(this);
-
-    // Insert before Fetch handler (which is automatically added at the end)
-    // The handlers array in requestManager._handlers is: [BaseURL, Logging, RelationshipLinks, Fetch]
-    // We want: [BaseURL, Logging, RelationshipLinks, EagerLoader, Fetch]
-    // const handlers = this.requestManager._handlers;
-    // handlers.splice(handlers.length - 1, 0, eagerLoader);
   }
 }
 

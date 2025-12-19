@@ -101,33 +101,26 @@ This project is an **exploratory learning journey** to understand and evaluate *
 - 🆕 **Relationship syntax**: `kind: 'resource'` for belongs-to, `kind: 'collection'` for has-many
 
 #### 7. **Full Store Configuration** (`app/services/store.js`) ✅
-- Uses `useLegacyStore` factory from `@warp-drive/legacy` (v5.8.0)
-- `linksMode: false` - WarpDrive's linksMode isn't yet fully implemented
+- Uses `useRecommendedStore` factory from `@warp-drive/core` (v5.8.0)
 - Automatically provides: SchemaService, JSONAPICache, RequestManager, cache policy
-- Custom handlers chain: BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch
+- Custom handlers chain: BaseURL → Logging → RelationshipLinks → Fetch
 - All 4 schemas registered on construction
 - 60% less code than manual implementation (~30 lines vs ~75 lines)
 
 #### 7.1. **Custom Request Handlers** 🆕
-**Purpose:** Enable JSON:API-compliant relationship structure
+**Purpose:** Enable JSON:API-compliant relationship structure and request logging
 
 **RelationshipLinksHandler** (`app/handlers/relationship-links.js`):
 - Injects JSON:API `links` into relationship objects
 - Detects JSON:API responses by shape (not content-type header)
 - Adds `links.related` URLs for each relationship based on type + id
 - Enables proper JSON:API relationship structure
-- Required for `relationship.fetch()` to work (needs `links.related` URL)
-
-**EagerRelationshipLoader** (`app/handlers/eager-relationship-loader.js`):
-- ~~Currently in codebase but not actively used~~ 
-- Pre-fetches missing relationships before template access
-- Was explored as an approach but moved to component-based on-demand loading
-- May be useful for specific routes that need eager loading
+- **Critical**: Required for `relationship.fetch()` to work (needs `links.related` URL)
 
 **Handler Flow:**
 ```
-Request:  BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch
-Response: Fetch → EagerLoader → RelationshipLinks → Logging → BaseURL
+Request:  BaseURL → Logging → RelationshipLinks → Fetch
+Response: Fetch → RelationshipLinks → Logging → BaseURL
 ```
 
 **Key Handler**: RelationshipLinksHandler is critical for on-demand relationship loading. Without it, ResourceRelationship objects won't have the `links.related` URL needed for `.fetch()` to work.
@@ -324,7 +317,7 @@ See `plan.md` for full details. Summary:
 
 ### 2. Request Manager Architecture
 - All HTTP goes through `store.requestManager`
-- Handler chain: BaseURL → Logging → RelationshipLinks → EagerLoader → Fetch
+- Handler chain: BaseURL → Logging → RelationshipLinks → Fetch
 - RelationshipLinksHandler injects JSON:API `links` into relationships (required for `.fetch()`)
 - Absolute URLs bypass the BaseURLHandler (e.g., health check)
 - Cache handler is automatic (part of Store, not in explicit chain)
@@ -411,24 +404,20 @@ See `plan.md` for full details. Summary:
 - **What works**: Including collection data via API (`?include=tags`) ✅
 - **What works**: Data being cached ✅
 - **What DOESN'T work**: Accessing the relationship in templates/code ⛔
-- **Workaround**: EagerRelationshipLoader pre-fetches has-many relationships and adds to `included`, but templates still can't access them via `.data`
+- **No workaround available**: Even with `ResolveRelationship` component, cannot access collection fields
 - **Affected templates**: `posts/detail.gjs` (tags), `users/detail.gjs` (posts) - has-many sections commented out
 
 ### Async Relationships in Polaris Mode ⚠️
 - **LIMITATION**: WarpDrive's "Polaris" mode (non-legacy) doesn't support automatic relationship fetching
 - WarpDrive docs indicate this may be intentional - Polaris mode requires explicit control
 - Setting `async: true` with relationship links doesn't trigger automatic fetching on access
-- **EXPLORED APPROACHES**:
-  1. **EagerRelationshipLoader Handler** (Iteration 2) - Pre-fetches all relationships before template render
-     - Pros: Immediate data availability, no loading states
-     - Cons: Over-fetches data, can't show granular loading, not lazy
-  2. **ResolveRelationship Component** (Current) ✅ - On-demand component-based fetching
-     - Pros: Only fetches what's needed, loading states per relationship, works with cache
-     - Cons: Requires wrapping relationships in component
-- **Current Pattern**: `ResolveRelationship` component for DX-friendly on-demand loading
-  - Routes fetch primary resources only (no includes)
+- **CURRENT PATTERN**: `ResolveRelationship` component for DX-friendly on-demand loading ✅
+  - Routes fetch primary resources only (no includes needed)
   - Component calls `.fetch()` on `ResourceRelationship` when rendered
+  - Shows loading states per relationship
+  - Works with cache (skips fetch if data already loaded)
   - Clean separation: routes = data fetching, components = relationship resolution
+  - Only fetches what's actually rendered (no over-fetching)
 
 ### Import Paths
 - Use full module specifiers: `ui/utils/request-manager` not `../utils/...`
@@ -603,13 +592,13 @@ And be able to synthesize the knowledge into a concise report that a team of hum
    - Later accessing the author directly doesn't require another API call
    - Included resources are first-class cached entities
    - Cache automatically maintains relationship linkage
-   - EagerRelationshipLoader checks cache before fetching to avoid duplicates
+   - `ResolveRelationship` component checks cache before fetching to avoid duplicates
 
-6. **WarpDrive's async relationship implementation is incomplete**:
-   - `linksMode` flag exists but `validateBelongsToLinksMode` throws "not yet implemented" errors
-   - Setting `async: true` with links doesn't automatically fetch on access
-   - Workaround: Use RequestManager handlers to eagerly pre-fetch relationships
-   - This gives us immediate data availability without loading states
+6. **WarpDrive Polaris mode requires explicit relationship loading**:
+   - Polaris mode (non-legacy) doesn't auto-fetch relationships on access
+   - Setting `async: true` with links doesn't automatically trigger fetching
+   - Solution: Use `ResolveRelationship` component for on-demand loading
+   - This gives us loading states, cache awareness, and clean DX
 
 7. **RequestManager handlers are powerful**:
    - Can transform request/response data transparently
@@ -655,23 +644,16 @@ We explored **three approaches** for configuring the Store:
 **Why we chose useLegacyStore:** After learning the manual approach, we discovered `useRecommendedStore` isn't exported yet. `useLegacyStore` provides the same factory benefits while we wait for v6. By disabling all legacy features, we get pure modern WarpDrive patterns with less boilerplate. Perfect example of exploring multiple paths and finding the practical solution!
 
 ### Relationship Loading Patterns
-We explored **three approaches** for loading relationship data:
+We explored **two approaches** for loading relationship data:
 
 1. **Eager Loading via Include Parameter**
    - Use `?include=author,category,tags` in initial request
    - All relationships loaded with primary resource
    - Pros: Simple, all data available immediately
    - Cons: Over-fetches data, not lazy, larger initial payload
-   - Used in early Iteration 2
+   - Still useful for routes that always need specific relationships
 
-2. **EagerRelationshipLoader Handler** (Custom RequestManager Handler)
-   - Analyzes response, auto-fetches all missing relationships
-   - Adds fetched data to `included` array before caching
-   - Pros: Automatic, no template changes needed
-   - Cons: Over-fetches, can't show granular loading, complex handler logic
-   - Explored but moved away from
-
-3. **ResolveRelationship Component** ✅ **Current Choice**
+2. **ResolveRelationship Component** ✅ **Current Pattern**
    - Component wraps relationship, calls `.fetch()` on-demand
    - Shows loading/error states per relationship
    - Only fetches what's rendered

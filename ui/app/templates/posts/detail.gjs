@@ -76,21 +76,21 @@ import ResolveRelationship from 'ui/components/resolve-relationship';
             The relationship is defined in the schema and data is cached, but accessing it throws:
             "Accessing collection fields is not yet implemented"
 
-            This will be re-enabled when WarpDrive implements collection field access.
+            When WarpDrive implements collection field access, this would use ResolveRelationship:
         }}
         {{!--
-        {{#if @model.post.tags.data}}
-          <section class="post-section">
-            <h3>Tags</h3>
+        <section class="post-section">
+          <h3>Tags</h3>
+          <ResolveRelationship @resource={{@model.post.tags}} as |tags|>
             <div class="tags-list">
-              {{#each @model.post.tags.data as |tag|}}
+              {{#each tags as |tag|}}
                 <span class="tag">{{tag.name}}</span>
               {{else}}
                 <p class="muted">No tags</p>
               {{/each}}
             </div>
-          </section>
-        {{/if}}
+          </ResolveRelationship>
+        </section>
         --}}
 
         {{! Post Stats }}

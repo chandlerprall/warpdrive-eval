@@ -1,6 +1,7 @@
 import { pageTitle } from 'ember-page-title';
 import { LinkTo } from '@ember/routing';
 import DebugPanel from 'ui/components/debug-panel';
+import ResolveRelationship from 'ui/components/resolve-relationship';
 
 <template>
   {{pageTitle "Posts"}}
@@ -33,29 +34,31 @@ import DebugPanel from 'ui/components/debug-panel';
               <p class="excerpt">{{post.excerpt}}</p>
             {{/if}}
 
-            {{! ASYNC RELATIONSHIPS EXPLORATION }}
+            {{! Relationships loaded on-demand via ResolveRelationship component }}
             <div class="post-relationships">
-              {{#if post.author.data}}
+              <ResolveRelationship @resource={{post.author}} as |author|>
                 <p class="relationship-info">
-                  ✍️ Author: <strong>{{post.author.data.displayName}}</strong> (@{{post.author.data.username}})
+                  ✍️ Author: <strong>{{author.displayName}}</strong> (@{{author.username}})
                 </p>
-              {{/if}}
+              </ResolveRelationship>
 
-              {{#if post.category.data}}
+              <ResolveRelationship @resource={{post.category}} as |category|>
                 <p class="relationship-info">
-                  📁 Category: <strong>{{post.category.data.name}}</strong>
+                  📁 Category: <strong>{{category.name}}</strong>
                 </p>
-              {{/if}}
+              </ResolveRelationship>
 
-              {{! Note: Tags are a collection (has-many), may not be accessible yet per WarpDrive limitations }}
-              {{!-- {{#if post.tags.data}}
+              {{! Note: Tags are a collection (has-many) - WarpDrive doesn't support accessing collection fields yet }}
+              {{!-- 
+              <ResolveRelationship @resource={{post.tags}} as |tags|>
                 <p class="relationship-info">
                   🏷️ Tags:
-                  {{#each post.tags.data as |tag|}}
+                  {{#each tags as |tag|}}
                     <span class="tag-badge">{{tag.name}}</span>
                   {{/each}}
                 </p>
-              {{/if}} --}}
+              </ResolveRelationship>
+              --}}
             </div>
 
             <div class="post-meta">
